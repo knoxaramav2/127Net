@@ -15,6 +15,6 @@ namespace HomeNet.Models
 
         //Referenced by
         //public ICollection<UserAccount?> MaximumAuthorities { get; } = [];
-        public ICollection<UserAccount?> OperatingAuthorities { get; } = [];
+        public ICollection<UserAccount> OperatingAuthorities { get; } = [];
     }
 }

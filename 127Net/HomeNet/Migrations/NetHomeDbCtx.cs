@@ -16,10 +16,7 @@ namespace HomeNet.Migrations
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserAccount>(e => { e.HasKey(k => k.Id); });
-            modelBuilder.Entity<RoleAuthority>()
-                .HasMany(e => e.MaximumAuthorities)
-                .WithOne(e => e.MaximumAuthority)
-                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<RoleAuthority>()
                 .HasMany(e => e.OperatingAuthorities)
                 .WithOne(e => e.OperatingAuthority)

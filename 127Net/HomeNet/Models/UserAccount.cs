@@ -10,7 +10,7 @@ namespace HomeNet.Models
         //[AllowNull]
         //public RoleAuthority? MaximumAuthority { get; set; }
         [AllowNull]
-        public RoleAuthority? OperatingAuthority { get; set; }
+        public RoleAuthority OperatingAuthority { get; set; }
         [NotNull]
         public required string UserName { get; set; }
         [AllowNull]
