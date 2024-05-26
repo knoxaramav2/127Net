@@ -14,6 +14,7 @@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject HomeCoreDbCtx DbCtx;
 
 <PageTitle>Register</PageTitle>
 
@@ -28,7 +29,13 @@
             <hr />
             <ValidationSummary class="text-danger" role="alert" />
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <InputText @bind-Value="Input.Username" class="form-control" autocomplete="username" aria-required="true" placeholder="Username" />
+                <label for="username">Username</label>
+                <ValidationMessage For="() => Input.Username" class="text-danger" />
+            </div>
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Email" class="form-control" autocomplete="email" aria-required="true" placeholder="Email (optional)" />
                 <label for="email">Email</label>
                 <ValidationMessage For="() => Input.Email" class="text-danger" />
             </div>
@@ -42,6 +49,16 @@
                 <label for="confirm-password">Confirm Password</label>
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
             </div>
+            <div class="form-floating mb-3">
+                <InputSelect @bind-Value="Input.RoleId" class="form-control" aria-required="true" >
+                    @foreach (var auth in Authorities)
+                    {
+                        <option value="@auth.Id">@auth.RoleName</option>
+                    }
+                </InputSelect>
+                <label for="authority">Role</label>
+            </div>
+            
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </EditForm>
     </div>
@@ -56,6 +73,8 @@
 
 @code {
     private IEnumerable<IdentityError>? identityErrors;
+    private RoleAuthority[] Authorities;
+    private RoleAuthority SelectedAuthority;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
@@ -69,7 +88,7 @@
     {
         var user = CreateUser();
 
-        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        await UserStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
         var emailStore = GetEmailStore();
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
         var result = await UserManager.CreateAsync(user, Input.Password);
@@ -106,7 +125,11 @@
     {
         try
         {
-            return Activator.CreateInstance<UserAccount>();
+            var user = Activator.CreateInstance<UserAccount>();
+
+            user.RoleAuthorityId = Input.RoleId;
+
+            return user;
         }
         catch
         {
@@ -124,9 +147,26 @@
         return (IUserEmailStore<UserAccount>)UserStore;
     }
 
+    protected override void OnInitialized()
+    {
+        Authorities = GetAuthorities();
+        SelectedAuthority = Authorities.FirstOrDefault();
+        base.OnInitialized();
+    }
+
+    private RoleAuthority[] GetAuthorities()
+    {
+        List<RoleAuthority> auths = DbCtx.AuthRoles.ToList();
+        var ret = auths.OrderByDescending(x => x.AuthLevel).ToArray();
+        return ret;
+    }
+
     private sealed class InputModel
     {
         [Required]
+        [Display(Name = "Username")]
+        public string Username { get; set; } = "";
+
         [EmailAddress]
         [Display(Name = "Email")]
         public string Email { get; set; } = "";
@@ -141,5 +181,9 @@
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; } = "";
+
+        [Required]
+        [Display(Name = "Authorized Role")]
+        public int RoleId { get; set; } = -1;
     }
 }

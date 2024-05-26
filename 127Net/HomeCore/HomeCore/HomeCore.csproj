@@ -17,8 +17,4 @@
     <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Data\Migrations\" />
-  </ItemGroup>
-
 </Project>
