@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34902.65
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeCore", "HomeCore\HomeCore\HomeCore.csproj", "{6D806AEB-656E-4D69-8FC4-808D29BEEBCD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeCore", "HomeCore\HomeCore\HomeCore.csproj", "{6D806AEB-656E-4D69-8FC4-808D29BEEBCD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeCore.Client", "HomeCore\HomeCore.Client\HomeCore.Client.csproj", "{68289637-1433-424A-AE60-DE710E9F5329}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeCore.Client", "HomeCore\HomeCore.Client\HomeCore.Client.csproj", "{68289637-1433-424A-AE60-DE710E9F5329}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

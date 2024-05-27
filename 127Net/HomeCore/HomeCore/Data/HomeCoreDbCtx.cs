@@ -12,6 +12,7 @@ namespace HomeCore.Data
     {
         public virtual DbSet<UserAccount> UserAccounts { get; set; }
         public virtual DbSet<Device> Devices { get; set; }
+        public virtual DbSet<DeviceOwner> DeviceOwners { get; set; }
         public virtual DbSet<RoleAuthority> AuthRoles { get; set; }
         public virtual DbSet<NetComponent> NetComponents { get; set; }
         public virtual DbSet<NetControl> NetControls { get; set; }
@@ -21,6 +22,7 @@ namespace HomeCore.Data
         {
             //Debugger.Launch();
             builder.Entity<UserAccount>(e => { e.HasKey(k => k.Id); });
+            builder.Entity<DeviceOwner>(e => { e.HasKey(k => k.Id); });
             builder.Entity<RoleAuthority>(e => { e.HasKey(k => k.Id); });
 
             builder.Entity<RoleAuthority>(e =>

@@ -18,7 +18,7 @@
                         <DropdownMenu Class="dropdown-w-lim">
                             <DropdownItem To="Account/Manage" Type="ButtonType.Link">@context.User.Identity?.Name</DropdownItem>
                             <DropdownDivider/>
-                            <DropdownItem To="Account/Logout" Type="ButtonType.Button">
+                            <DropdownItem Type="ButtonType.Button">
                                 <form action="Account/Logout" method="post">
                                     <AntiforgeryToken />
                                     <input type="hidden" name="ReturnUrl" value="@currentUrl" />
