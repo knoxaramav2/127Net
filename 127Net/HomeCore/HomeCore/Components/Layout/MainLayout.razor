@@ -1,4 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@implements IDisposable
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
 
 <div class="page">
     <div class="sidebar">
@@ -7,7 +11,36 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <AuthorizeView>
+                <Authorized>
+                    <Dropdown>
+                        <DropdownToggleButton><img src="blankuser_icon.png" /></DropdownToggleButton>
+                        <DropdownMenu Class="dropdown-w-lim">
+                            <DropdownItem To="Account/Manage" Type="ButtonType.Link">@context.User.Identity?.Name</DropdownItem>
+                            <DropdownDivider/>
+                            <DropdownItem To="Account/Logout" Type="ButtonType.Button">
+                                <form action="Account/Logout" method="post">
+                                    <AntiforgeryToken />
+                                    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                                    <button type="submit" class="nav-link">
+                                        <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                                    </button>
+                                </form>
+                            </DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                </Authorized>
+                <NotAuthorized>
+                    <Dropdown>
+                        <DropdownToggleButton><img src="blankuser_icon.png"/></DropdownToggleButton>
+                        <DropdownMenu Class="dropdown-w-lim">
+                            <DropdownItem To="Account/Login" Type="ButtonType.Link">Login</DropdownItem>
+                            <DropdownItem To="Account/Register" Type="ButtonType.Link" >Register</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                </NotAuthorized>
+                
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">
@@ -21,3 +54,36 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code{
+    private string? currentUrl;
+    private string? icoSrc;
+
+    private async void Logout()
+    {
+        //var resp = await Http.PostAsync("Account/Logout")   
+    }
+
+    protected void GetUserIcon()
+    {
+        icoSrc = "blankuser_icon.png";
+    }
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+        GetUserIcon();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

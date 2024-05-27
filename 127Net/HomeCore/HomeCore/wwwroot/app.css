@@ -49,3 +49,17 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+.header-nav{
+    /*float: right;*/
+    padding:0;
+    background-color:red;
+}
+
+.dropdown-w-lim a{
+    display: inline;
+}
+
+.ico-png{
+
+}
