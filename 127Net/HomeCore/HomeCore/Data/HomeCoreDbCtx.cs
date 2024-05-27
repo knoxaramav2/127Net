@@ -24,6 +24,22 @@ namespace HomeCore.Data
             builder.Entity<UserAccount>(e => { e.HasKey(k => k.Id); });
             builder.Entity<DeviceOwner>(e => { e.HasKey(k => k.Id); });
             builder.Entity<RoleAuthority>(e => { e.HasKey(k => k.Id); });
+            builder.Entity<Device>(e => { e.HasKey(k => k.Id); });
+
+            builder.Entity<ConnectedDevice>(e =>
+            {
+                e.HasKey(x => new { x.Device1Id, x.Device2Id });
+
+                e.HasOne(x => x.Device1)
+                .WithMany(x => x.Connected)
+                .HasForeignKey(x => x.Device1Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.Device2)
+                .WithMany()
+                .HasForeignKey(x => x.Device2Id)
+                .OnDelete(DeleteBehavior.Restrict);
+            });
 
             builder.Entity<RoleAuthority>(e =>
             {
