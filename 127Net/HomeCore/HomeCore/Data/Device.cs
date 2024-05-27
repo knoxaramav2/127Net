@@ -11,6 +11,9 @@ namespace HomeCore.Data
         public int Id { get; set; }
         public required string DisplayName { get; set; }
         public required string HwId { get; set; }
+        public string? Manufacturer { get; set; }
+        public string? OS { get; set; }
+        public string? FriendlyName { get; set; }
         public required ICollection<UserAccount> Users { get; set; } = [];
         public DateTime? DeletedOn { get; set; }
 

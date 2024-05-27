@@ -107,11 +107,14 @@
         if (UserManager.Options.SignIn.RequireConfirmedAccount)
         {
             RedirectManager.RedirectTo(
-                "Account/RegisterConfirmation",
-                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
+                "Account/SystemSetup",
+                new() { ["username"] = Input.Username, ["returnUrl"] = ReturnUrl });
         }
 
         await SignInManager.SignInAsync(user, isPersistent: false);
+
+        VerifyInitialSetup();
+
         RedirectManager.RedirectTo(ReturnUrl);
     }
 
@@ -162,6 +165,17 @@
         List<RoleAuthority> auths = DbCtx.AuthRoles.ToList();
         var ret = auths.OrderBy(x => x.AuthLevel).ToArray();
         return ret;
+    }
+
+    private void VerifyInitialSetup()
+    {
+        bool hasAdmin = DbCtx.Users.Count(x => x.MaxAuthority.AuthLevel == 0) > 0;
+        if (!hasAdmin)
+        {
+            RedirectManager.RedirectTo(
+                "Account/SystemSetup",
+                new() { ["username"] = Input.Username, ["returnUrl"] = ReturnUrl });
+        }
     }
 
     private sealed class InputModel

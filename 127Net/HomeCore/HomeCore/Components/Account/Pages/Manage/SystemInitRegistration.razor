@@ -1,0 +1,36 @@
+﻿@page "/Account/SystemSetup"
+
+@using System.Text
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using HomeCore.Data
+
+@inject UserManager<UserAccount> UserManager
+@inject IdentityRedirectManager RedirectManager
+@inject HomeCoreDbCtx DbCtx;
+
+<title>HomeNet Setup</title>
+
+<h1>HomeNet Setup</h1>
+<StatusMessage Message="@statusMessage" />
+
+@code {
+    private string? statusMessage;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    private string? UserName { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        if(UserName is null)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            statusMessage = $"Error continuing registration";
+        }
+
+        return base.OnInitializedAsync();
+    }
+}

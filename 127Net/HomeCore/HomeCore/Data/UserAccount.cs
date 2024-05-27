@@ -9,11 +9,11 @@ namespace HomeCore.Data
     {
         public int MaxAuthorityId { get; set; }
         [ForeignKey("MaxAuthorityId")]
-        public required RoleAuthority? MaxAuthority { get; set; }
+        public required RoleAuthority MaxAuthority { get; set; }
 
         public int OperatingAuthorityId { get; set; }
         [ForeignKey("OperatingAuthorityId")]
-        public required RoleAuthority? OperatingAuthority { get; set; }
+        public required RoleAuthority OperatingAuthority { get; set; }
 
         public DateTime? DeletedOn { get; set; }
     }

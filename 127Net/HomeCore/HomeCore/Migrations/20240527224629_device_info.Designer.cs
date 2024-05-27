@@ -3,6 +3,7 @@ using System;
 using HomeCore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeCore.Migrations
 {
     [DbContext(typeof(HomeCoreDbCtx))]
-    partial class HomeCoreDbCtxModelSnapshot : ModelSnapshot
+    [Migration("20240527224629_device_info")]
+    partial class device_info
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

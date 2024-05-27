@@ -32,7 +32,7 @@ builder.Services.AddDbContext<HomeCoreDbCtx>(options =>
     options.UseMySQL(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<UserAccount>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentityCore<UserAccount>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<HomeCoreDbCtx>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
