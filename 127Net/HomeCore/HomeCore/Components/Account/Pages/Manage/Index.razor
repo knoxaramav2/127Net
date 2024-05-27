@@ -8,6 +8,7 @@
 @inject SignInManager<UserAccount> SignInManager
 @inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
+@inject HomeCoreDbCtx DbCtx;
 
 <PageTitle>Profile</PageTitle>
 
@@ -28,6 +29,15 @@
                 <label for="phone-number" class="form-label">Phone number</label>
                 <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />
             </div>
+            <div class="form-floating mb-3">
+                <InputSelect @bind-Value="Input.RoleId" class="form-control" aria-required="true">
+                    @foreach (var auth in Authorities)
+                    {
+                        <option value="@auth.Id">@auth.RoleName</option>
+                    }
+                </InputSelect>
+                <label for="authority">Role</label>
+            </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
         </EditForm>
     </div>
@@ -37,6 +47,7 @@
     private UserAccount user = default!;
     private string? username;
     private string? phoneNumber;
+    private RoleAuthority[] Authorities = [];
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -45,10 +56,12 @@
     private InputModel Input { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
-    {
+    {   
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
         username = await UserManager.GetUserNameAsync(user);
         phoneNumber = await UserManager.GetPhoneNumberAsync(user);
+
+        Authorities = GetAuthorities(user.MaxAuthority?.AuthLevel ?? -1);
 
         Input.PhoneNumber ??= phoneNumber;
     }
@@ -68,10 +81,21 @@
         RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated", HttpContext);
     }
 
+    private RoleAuthority[] GetAuthorities(int maxAuthId)
+    {
+        List<RoleAuthority> auths = DbCtx.AuthRoles.ToList();
+        var maxAuth = auths.First(x => x.Id == maxAuthId).AuthLevel;
+        var ret = auths.OrderByDescending(x => x.AuthLevel).Where(x => x.AuthLevel >= maxAuth).ToArray();
+        return ret;
+    }
+
     private sealed class InputModel
     {
         [Phone]
         [Display(Name = "Phone number")]
         public string? PhoneNumber { get; set; }
+
+        [Display(Name = "Authorized Role")]
+        public int RoleId { get; set; } = -1;
     }
 }

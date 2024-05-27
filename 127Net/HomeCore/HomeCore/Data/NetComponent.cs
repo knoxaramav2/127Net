@@ -3,25 +3,27 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HomeCore.Data
 {
-    public class NetListener
+    public class NetListener : INetRecord
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public required Device Device { get; set; }
         public bool Enabled { get; set; }
+        public DateTime? DeletedOn { get; set; }
     }
 
-    public class NetControl
+    public class NetControl : INetRecord
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public required string ComponentLibId { get; set; }
         public required string FunctionId { get; set; }
+        public DateTime? DeletedOn { get; set; }
     }
 
-    public class NetComponent
+    public class NetComponent : INetRecord
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -36,5 +38,6 @@ namespace HomeCore.Data
 
         public required ICollection<NetControl> ComponentControls { get; set; }
         public required ICollection<NetListener> ApprovedListeners { get; set; }
+        public DateTime? DeletedOn { get; set; }
     }
 }

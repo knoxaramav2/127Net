@@ -14,7 +14,7 @@
 
 <h1>Log in</h1>
 <div class="row">
-    <div class="col-md-4">
+    <div class="">
         <section>
             <StatusMessage Message="@errorMessage" />
             <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
@@ -26,12 +26,6 @@
                     <InputText @bind-Value="Input.UserName" class="form-control" autocomplete="username" aria-required="true" placeholder="Username" />
                     <label for="username" class="form-label">Username</label>
                     <ValidationMessage For="() => Input.UserName" class="text-danger" />
-                </div>
-                <ValidationSummary class="text-danger" role="alert" />
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="email" aria-required="true" placeholder="Email (optional)" />
-                    <label for="email" class="form-label">Email</label>
-                    <ValidationMessage For="() => Input.Email" class="text-danger" />
                 </div>
                 <div class="form-floating mb-3">
                     <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
@@ -49,23 +43,16 @@
                 </div>
                 <div>
                     <p>
-                        <a href="Account/ForgotPassword">Forgot your password?</a>
+                        <a href="Account/ForgotPassword">Forgot password</a>
                     </p>
                     <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
+                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register</a>
                     </p>
-                    <p>
+@*                     <p>
                         <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
-                    </p>
+                    </p> *@
                 </div>
             </EditForm>
-        </section>
-    </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Use another service to log in.</h3>
-            <hr />
-            <ExternalLoginPicker />
         </section>
     </div>
 </div>
@@ -124,9 +111,6 @@
         [Required]
         [DataType(DataType.Text)]
         public string UserName { get; set; } = "";
-
-        [EmailAddress]
-        public string Email { get; set; } = "";
 
         [Required]
         [DataType(DataType.Password)]

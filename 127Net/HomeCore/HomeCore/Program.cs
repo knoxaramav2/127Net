@@ -2,6 +2,7 @@ using HomeCore.Client.Pages;
 using HomeCore.Components;
 using HomeCore.Components.Account;
 using HomeCore.Data;
+using HomeCore.Client;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

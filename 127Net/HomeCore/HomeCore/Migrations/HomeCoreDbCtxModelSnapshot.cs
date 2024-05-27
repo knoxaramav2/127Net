@@ -25,6 +25,9 @@ namespace HomeCore.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("DeletedOn")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -47,6 +50,9 @@ namespace HomeCore.Migrations
                     b.Property<string>("ComponentName")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("DeletedOn")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -82,6 +88,9 @@ namespace HomeCore.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<DateTime?>("DeletedOn")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("FunctionId")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -101,6 +110,9 @@ namespace HomeCore.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedOn")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("DeviceId")
                         .HasColumnType("int");
@@ -129,14 +141,17 @@ namespace HomeCore.Migrations
                     b.Property<int>("AuthLevel")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("DeletedOn")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<int?>("DowngradeId")
                         .HasColumnType("int");
 
                     b.Property<bool>("ForceCredential")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<DateTime>("ReauthTime")
-                        .HasColumnType("datetime(6)");
+                    b.Property<int>("ReauthTime")
+                        .HasColumnType("int");
 
                     b.Property<string>("RoleName")
                         .IsRequired()
@@ -147,6 +162,32 @@ namespace HomeCore.Migrations
                     b.HasIndex("DowngradeId");
 
                     b.ToTable("AuthRoles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            AuthLevel = 0,
+                            ForceCredential = false,
+                            ReauthTime = 30,
+                            RoleName = "Admin"
+                        },
+                        new
+                        {
+                            Id = -2,
+                            AuthLevel = 5,
+                            ForceCredential = false,
+                            ReauthTime = 300,
+                            RoleName = "Owner"
+                        },
+                        new
+                        {
+                            Id = -3,
+                            AuthLevel = 10,
+                            ForceCredential = false,
+                            ReauthTime = 3600,
+                            RoleName = "Guest"
+                        });
                 });
 
             modelBuilder.Entity("HomeCore.Data.UserAccount", b =>
@@ -160,6 +201,9 @@ namespace HomeCore.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("DeletedOn")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int?>("DeviceId")
                         .HasColumnType("int");
@@ -177,6 +221,9 @@ namespace HomeCore.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetime");
 
+                    b.Property<int>("MaxAuthorityId")
+                        .HasColumnType("int");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
@@ -184,6 +231,9 @@ namespace HomeCore.Migrations
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
+
+                    b.Property<int>("OperatingAuthorityId")
+                        .HasColumnType("int");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("longtext");
@@ -193,9 +243,6 @@ namespace HomeCore.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
-
-                    b.Property<int>("RoleAuthorityId")
-                        .HasColumnType("int");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");
@@ -211,6 +258,8 @@ namespace HomeCore.Migrations
 
                     b.HasIndex("DeviceId");
 
+                    b.HasIndex("MaxAuthorityId");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -218,7 +267,7 @@ namespace HomeCore.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.HasIndex("RoleAuthorityId");
+                    b.HasIndex("OperatingAuthorityId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -399,11 +448,19 @@ namespace HomeCore.Migrations
                         .WithMany("Users")
                         .HasForeignKey("DeviceId");
 
-                    b.HasOne("HomeCore.Data.RoleAuthority", "OperatingAuthority")
-                        .WithMany("OperatingAuthorities")
-                        .HasForeignKey("RoleAuthorityId")
+                    b.HasOne("HomeCore.Data.RoleAuthority", "MaxAuthority")
+                        .WithMany("MaximumAuthorities")
+                        .HasForeignKey("MaxAuthorityId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("HomeCore.Data.RoleAuthority", "OperatingAuthority")
+                        .WithMany("OperatingAuthorities")
+                        .HasForeignKey("OperatingAuthorityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MaxAuthority");
 
                     b.Navigation("OperatingAuthority");
                 });
@@ -473,6 +530,8 @@ namespace HomeCore.Migrations
 
             modelBuilder.Entity("HomeCore.Data.RoleAuthority", b =>
                 {
+                    b.Navigation("MaximumAuthorities");
+
                     b.Navigation("OperatingAuthorities");
                 });
 #pragma warning restore 612, 618

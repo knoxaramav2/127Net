@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HomeCore.Data
 {
-    public class Device
+    public class Device : INetRecord
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -11,5 +11,6 @@ namespace HomeCore.Data
         public required string DisplayName { get; set; }
         public required string HwId { get; set; }
         public required ICollection<UserAccount> Users { get; set; } = [];
+        public DateTime? DeletedOn { get; set; }
     }
 }

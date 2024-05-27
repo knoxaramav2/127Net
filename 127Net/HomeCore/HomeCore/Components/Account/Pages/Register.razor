@@ -1,11 +1,11 @@
 ﻿@page "/Account/Register"
 
+@using HomeCore.Data
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using HomeCore.Data
 
 @inject UserManager<UserAccount> UserManager
 @inject IUserStore<UserAccount> UserStore
@@ -21,8 +21,9 @@
 <h1>Register</h1>
 
 <div class="row">
-    <div class="col-md-4">
+    <div class="">
         <StatusMessage Message="@Message" />
+        <StatusMessage Message="@StatusMessage" />
         <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
             <DataAnnotationsValidator />
             <h2>Create a new account.</h2>
@@ -33,7 +34,6 @@
                 <label for="username">Username</label>
                 <ValidationMessage For="() => Input.Username" class="text-danger" />
             </div>
-            <ValidationSummary class="text-danger" role="alert" />
             <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.Email" class="form-control" autocomplete="email" aria-required="true" placeholder="Email (optional)" />
                 <label for="email">Email</label>
@@ -50,31 +50,24 @@
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
             </div>
             <div class="form-floating mb-3">
-                <InputSelect @bind-Value="Input.RoleId" class="form-control" aria-required="true" >
+                <InputSelect @bind-Value="Input.OperatingRole" class="form-control" aria-required="true" id="AuthSelect">
                     @foreach (var auth in Authorities)
                     {
-                        <option value="@auth.Id">@auth.RoleName</option>
+                        <option value="@auth">@auth.RoleName</option>
                     }
                 </InputSelect>
                 <label for="authority">Role</label>
+                <ValidationMessage For="() => Input.OperatingRole" class="text-danger" />
             </div>
             
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </EditForm>
     </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
-    </div>
 </div>
 
 @code {
     private IEnumerable<IdentityError>? identityErrors;
-    private RoleAuthority[] Authorities;
-    private RoleAuthority SelectedAuthority;
+    private RoleAuthority[] Authorities = [];
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
@@ -83,6 +76,7 @@
     private string? ReturnUrl { get; set; }
 
     private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+    private string? StatusMessage;
 
     public async Task RegisterUser(EditContext editContext)
     {
@@ -126,8 +120,8 @@
         try
         {
             var user = Activator.CreateInstance<UserAccount>();
-
-            user.RoleAuthorityId = Input.RoleId;
+            user.MaxAuthority = Input.OperatingRole;
+            user.OperatingAuthority = Input.OperatingRole;
 
             return user;
         }
@@ -150,14 +144,23 @@
     protected override void OnInitialized()
     {
         Authorities = GetAuthorities();
-        SelectedAuthority = Authorities.FirstOrDefault();
+        var defAuth = Authorities.FirstOrDefault();
+
+        if (defAuth == null)
+        {
+            StatusMessage = $"System error; Account information cannot be loaded.";
+        } else
+        {
+            Input.OperatingRole = defAuth;
+        }
+
         base.OnInitialized();
     }
 
     private RoleAuthority[] GetAuthorities()
     {
         List<RoleAuthority> auths = DbCtx.AuthRoles.ToList();
-        var ret = auths.OrderByDescending(x => x.AuthLevel).ToArray();
+        var ret = auths.OrderBy(x => x.AuthLevel).ToArray();
         return ret;
     }
 
@@ -182,8 +185,8 @@
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; } = "";
 
-        [Required]
+        //[Required]
         [Display(Name = "Authorized Role")]
-        public int RoleId { get; set; } = -1;
+        public RoleAuthority OperatingRole { get; set; } = null!;
     }
 }

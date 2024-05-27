@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using MySql.Data.MySqlClient;
+using MySql.EntityFrameworkCore.DataAnnotations;
+using System.Diagnostics;
 using System.Reflection.Emit;
 
 namespace HomeCore.Data
@@ -16,14 +19,49 @@ namespace HomeCore.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            //Debugger.Launch();
             builder.Entity<UserAccount>(e => { e.HasKey(k => k.Id); });
             builder.Entity<RoleAuthority>(e => { e.HasKey(k => k.Id); });
 
-            builder.Entity<RoleAuthority>()
-                .HasMany(e => e.OperatingAuthorities)
-                .WithOne(e => e.OperatingAuthority)
-                .HasForeignKey(e => e.RoleAuthorityId)
+            builder.Entity<RoleAuthority>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasMany(x => x.MaximumAuthorities)
+                .WithOne(x => x.MaxAuthority)
+                .HasForeignKey(x => x.MaxAuthorityId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasKey(x => x.Id);
+                e.HasMany(x => x.OperatingAuthorities)
+                .WithOne(x => x.OperatingAuthority)
+                .HasForeignKey(x => x.OperatingAuthorityId)
+                .IsRequired(true)
+                .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<UserAccount>(e =>
+            {
+                e.HasKey(e => e.Id);
+                e.HasOne(x => x.MaxAuthority)
+                .WithMany(x => x.MaximumAuthorities)
+                .HasForeignKey(x => x.MaxAuthorityId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasKey(e => e.Id);
+                e.HasOne(x => x.OperatingAuthority)
+                .WithMany(x => x.OperatingAuthorities)
+                .HasForeignKey(x => x.OperatingAuthorityId)
+                .OnDelete(DeleteBehavior.Restrict);
+            });
+
+
+            RoleAuthority[] auths = [
+                new RoleAuthority{AuthLevel=0, ReauthTime=30, RoleName="Admin", Id=-1},
+                new RoleAuthority{AuthLevel=5, ReauthTime=300, RoleName="Owner", Id=-2},
+                new RoleAuthority{AuthLevel=10, ReauthTime=3600, RoleName="Guest", Id=-3}
+                ];
+
+            builder.Entity<RoleAuthority>().HasData(auths);
 
             base.OnModelCreating(builder);
         }
