@@ -6,6 +6,8 @@ using HomeCore.Client;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using HomeCore.Utility;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +32,8 @@ builder.Services.AddAuthentication(options =>
 var connectionString = builder.Configuration["ConnectionStrings:127NetDb"] ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<HomeCoreDbCtx>(options =>
     options.UseMySQL(connectionString));
+
+builder.Services.AddScoped<SystemState>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<UserAccount>(options => options.SignIn.RequireConfirmedAccount = false)

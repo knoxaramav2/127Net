@@ -74,9 +74,9 @@ namespace HomeCore.Data
 
 
             RoleAuthority[] auths = [
-                new RoleAuthority{AuthLevel=0, ReauthTime=30, RoleName="Admin", Id=-1},
-                new RoleAuthority{AuthLevel=5, ReauthTime=300, RoleName="Owner", Id=-2},
-                new RoleAuthority{AuthLevel=10, ReauthTime=3600, RoleName="Guest", Id=-3}
+                new RoleAuthority{AuthLevel=0, ReauthTime=30, RoleName="Admin", Id=1, DowngradeId=2},
+                new RoleAuthority{AuthLevel=5, ReauthTime=300, RoleName="Owner", Id=2, DowngradeId=3},
+                new RoleAuthority{AuthLevel=10, ReauthTime=3600, RoleName="Guest", Id=3}
                 ];
 
             builder.Entity<RoleAuthority>().HasData(auths);

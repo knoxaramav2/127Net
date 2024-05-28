@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeCore.Migrations
 {
     [DbContext(typeof(HomeCoreDbCtx))]
-    [Migration("20240527212527_device_connect")]
-    partial class device_connect
+    [Migration("20240528010518_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,8 +53,17 @@ namespace HomeCore.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("HwId")
                         .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Manufacturer")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("OS")
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
@@ -212,23 +221,25 @@ namespace HomeCore.Migrations
                     b.HasData(
                         new
                         {
-                            Id = -1,
+                            Id = 1,
                             AuthLevel = 0,
+                            DowngradeId = 2,
                             ForceCredential = false,
                             ReauthTime = 30,
                             RoleName = "Admin"
                         },
                         new
                         {
-                            Id = -2,
+                            Id = 2,
                             AuthLevel = 5,
+                            DowngradeId = 3,
                             ForceCredential = false,
                             ReauthTime = 300,
                             RoleName = "Owner"
                         },
                         new
                         {
-                            Id = -3,
+                            Id = 3,
                             AuthLevel = 10,
                             ForceCredential = false,
                             ReauthTime = 3600,

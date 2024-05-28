@@ -9,7 +9,7 @@ using MySql.EntityFrameworkCore.Metadata;
 namespace HomeCore.Migrations
 {
     /// <inheritdoc />
-    public partial class init_migration : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -64,6 +64,9 @@ namespace HomeCore.Migrations
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     DisplayName = table.Column<string>(type: "longtext", nullable: false),
                     HwId = table.Column<string>(type: "longtext", nullable: false),
+                    Manufacturer = table.Column<string>(type: "longtext", nullable: true),
+                    OS = table.Column<string>(type: "longtext", nullable: true),
+                    FriendlyName = table.Column<string>(type: "longtext", nullable: true),
                     DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
@@ -164,6 +167,32 @@ namespace HomeCore.Migrations
                         column: x => x.DeviceId,
                         principalTable: "Devices",
                         principalColumn: "Id");
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ConnectedDevice",
+                columns: table => new
+                {
+                    Device1Id = table.Column<int>(type: "int", nullable: false),
+                    Device2Id = table.Column<int>(type: "int", nullable: false),
+                    DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ConnectedDevice", x => new { x.Device1Id, x.Device2Id });
+                    table.ForeignKey(
+                        name: "FK_ConnectedDevice_Devices_Device1Id",
+                        column: x => x.Device1Id,
+                        principalTable: "Devices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ConnectedDevice_Devices_Device2Id",
+                        column: x => x.Device2Id,
+                        principalTable: "Devices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySQL:Charset", "utf8mb4");
 
@@ -306,14 +335,42 @@ namespace HomeCore.Migrations
                 })
                 .Annotation("MySQL:Charset", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "DeviceOwners",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    DeviceId = table.Column<int>(type: "int", nullable: false),
+                    UserAcountId = table.Column<string>(type: "varchar(255)", nullable: false),
+                    DeletedOn = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeviceOwners", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DeviceOwners_AspNetUsers_UserAcountId",
+                        column: x => x.UserAcountId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DeviceOwners_Devices_DeviceId",
+                        column: x => x.DeviceId,
+                        principalTable: "Devices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
             migrationBuilder.InsertData(
                 table: "AuthRoles",
                 columns: new[] { "Id", "AuthLevel", "DeletedOn", "DowngradeId", "ForceCredential", "ReauthTime", "RoleName" },
                 values: new object[,]
                 {
-                    { -3, 10, null, null, false, 3600, "Guest" },
-                    { -2, 5, null, null, false, 300, "Owner" },
-                    { -1, 0, null, null, false, 30, "Admin" }
+                    { 3, 10, null, null, false, 3600, "Guest" },
+                    { 2, 5, null, 3, false, 300, "Owner" },
+                    { 1, 0, null, 2, false, 30, "Admin" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -374,6 +431,21 @@ namespace HomeCore.Migrations
                 column: "DowngradeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ConnectedDevice_Device2Id",
+                table: "ConnectedDevice",
+                column: "Device2Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeviceOwners_DeviceId",
+                table: "DeviceOwners",
+                column: "DeviceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeviceOwners_UserAcountId",
+                table: "DeviceOwners",
+                column: "UserAcountId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_NetComponents_MinimumRoleAuthorityId",
                 table: "NetComponents",
                 column: "MinimumRoleAuthorityId");
@@ -411,6 +483,12 @@ namespace HomeCore.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "ConnectedDevice");
+
+            migrationBuilder.DropTable(
+                name: "DeviceOwners");
 
             migrationBuilder.DropTable(
                 name: "NetControls");

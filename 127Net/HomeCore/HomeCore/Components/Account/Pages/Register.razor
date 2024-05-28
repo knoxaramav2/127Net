@@ -1,6 +1,7 @@
 ﻿@page "/Account/Register"
 
 @using HomeCore.Data
+@using HomeCore.Utility;
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
@@ -15,6 +16,7 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 @inject HomeCoreDbCtx DbCtx;
+@inject SystemState SysState;
 
 <PageTitle>Register</PageTitle>
 
@@ -163,8 +165,12 @@
     private RoleAuthority[] GetAuthorities()
     {
         List<RoleAuthority> auths = DbCtx.AuthRoles.ToList();
-        var ret = auths.OrderBy(x => x.AuthLevel).ToArray();
-        return ret;
+        var ret = (IEnumerable<RoleAuthority>)auths.OrderBy(x => x.AuthLevel);
+        if (!SysState.HasAdmin)
+        {
+            ret = ret.Where(x => x.AuthLevel == 0);
+        }
+        return ret.ToArray();
     }
 
     private void VerifyInitialSetup()

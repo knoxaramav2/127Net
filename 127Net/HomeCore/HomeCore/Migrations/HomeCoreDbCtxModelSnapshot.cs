@@ -218,23 +218,25 @@ namespace HomeCore.Migrations
                     b.HasData(
                         new
                         {
-                            Id = -1,
+                            Id = 1,
                             AuthLevel = 0,
+                            DowngradeId = 2,
                             ForceCredential = false,
                             ReauthTime = 30,
                             RoleName = "Admin"
                         },
                         new
                         {
-                            Id = -2,
+                            Id = 2,
                             AuthLevel = 5,
+                            DowngradeId = 3,
                             ForceCredential = false,
                             ReauthTime = 300,
                             RoleName = "Owner"
                         },
                         new
                         {
-                            Id = -3,
+                            Id = 3,
                             AuthLevel = 10,
                             ForceCredential = false,
                             ReauthTime = 3600,

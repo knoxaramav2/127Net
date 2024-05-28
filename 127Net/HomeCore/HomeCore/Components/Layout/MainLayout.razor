@@ -57,18 +57,11 @@
 
 @code{
     private string? currentUrl;
-    private string? icoSrc;
-
-    protected void GetUserIcon()
-    {
-        icoSrc = "blankuser_icon.png";
-    }
 
     protected override void OnInitialized()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
-        GetUserIcon();
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)

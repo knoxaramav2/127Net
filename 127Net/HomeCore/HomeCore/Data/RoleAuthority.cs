@@ -12,6 +12,8 @@ namespace HomeCore.Data
         public int AuthLevel { get; set; }
         public bool ForceCredential { get; set; }
         public int ReauthTime { get; set; }
+        public int? DowngradeId { get; set; }
+        [ForeignKey(nameof(DowngradeId))]
         public RoleAuthority? Downgrade { get; set; } = null;
         public DateTime? DeletedOn { get; set; }
 
