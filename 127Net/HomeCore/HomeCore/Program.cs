@@ -3,9 +3,11 @@ using HomeCore.Components.Account;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MySql.EntityFrameworkCore.Extensions;
 using NetCommons.Database;
 using NetCommons.HwDevice;
 using NetCommons.Models;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +21,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
+builder.Services.AddScoped<SystemState>();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -26,12 +29,11 @@ builder.Services.AddAuthentication(options =>
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
     })
     .AddIdentityCookies();
-
+builder.Configuration.AddUserSecrets("127NetDb");
 var connectionString = builder.Configuration["ConnectionStrings:127NetDb"] ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<HomeCoreDbCtx>(options =>
-    options.UseMySQL(connectionString));
+builder.Configuration.AddUserSecrets(connectionString);
+builder.Services.AddDbContext<HomeCoreDbCtx>();
 
-builder.Services.AddScoped<SystemState>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<UserAccount>(options => options.SignIn.RequireConfirmedAccount = false)

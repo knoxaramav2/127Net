@@ -7,23 +7,22 @@
     <UserSecretsId>aspnet-HomeCore-374480b6-1fc1-4f2e-9a5d-84e6c76f7612</UserSecretsId>
   </PropertyGroup>
     <PropertyGroup>
+		<EFMigrationsAdditionalArgs>--msbuildprojectextensionspath "$(BaseIntermediateOutputPath)."</EFMigrationsAdditionalArgs>
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>	
 	</PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="2.2.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Management" Version="8.0.0" />
     <ProjectReference Include="..\..\NetCommons\NetCommons.csproj" />
     <ProjectReference Include="..\HomeCore.Client\HomeCore.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.6" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.6">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.2" />
   </ItemGroup>
 
   <ItemGroup>

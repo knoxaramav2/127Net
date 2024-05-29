@@ -1,13 +1,17 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using NetCommons.HwDevice.Hardware;
 using NetCommons.Models;
+using System.Diagnostics;
 
 namespace NetCommons.Database
 {
-    public class HomeCoreDbCtx(DbContextOptions<HomeCoreDbCtx> options)
+    public class HomeCoreDbCtx(DbContextOptions<HomeCoreDbCtx> options, IConfiguration config)
         : IdentityDbContext<UserAccount>(options)
     {
+        private readonly IConfiguration _config = config;
+
         public virtual DbSet<UserAccount> UserAccounts { get; set; }
         public virtual DbSet<Device> Devices { get; set; }
         public virtual DbSet<DeviceOwner> DeviceOwners { get; set; }
@@ -15,6 +19,16 @@ namespace NetCommons.Database
         public virtual DbSet<NetComponent> NetComponents { get; set; }
         public virtual DbSet<NetControl> NetControls { get; set; }
         public virtual DbSet<NetListener> NetListeners { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder builder)
+        {
+            if(!builder.IsConfigured)
+            {
+                var connStr = _config["ConnectionStrings:127NetDb"] ?? 
+                    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+                builder.UseMySQL(connStr);
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -97,5 +111,7 @@ namespace NetCommons.Database
 
             return true;
         }
+    
+        
     }
 }
