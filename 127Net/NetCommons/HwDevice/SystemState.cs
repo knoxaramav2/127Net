@@ -1,17 +1,16 @@
-﻿using HomeCore.Data;
-using HomeCore.Utility.Hardware;
-using Microsoft.AspNetCore.Components;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using NetCommons.Database;
+using NetCommons.HwDevice.Hardware;
+using NetCommons.Models;
 using System.Diagnostics;
 
-namespace HomeCore.Utility
+namespace NetCommons.HwDevice
 {
     public class SystemState
     {
         private static SystemState? _instance = null;
 
         public bool HasAdmin { get; private set; }
-        public Device? Device { get; private set; }
+        public Device Device { get; private set; }
         public bool IsInitialized => HasAdmin;
 
         public SystemState(HomeCoreDbCtx ctx) {
@@ -21,7 +20,8 @@ namespace HomeCore.Utility
                 Debug.WriteLine($"::: {uac.UserName} | {uac.MaxAuthority.AuthLevel} | {(uac.MaxAuthority.AuthLevel == 0 ? "X" : "-")}");
             }
             HasAdmin = ctx.UserAccounts.Any(x => x.MaxAuthority.AuthLevel == 0);
-            Device = ctx.Devices.FirstOrDefault(x => x.HwId == dInfo.SerialNumber);
+            Device = ctx.Devices.First(x => x.HwId == dInfo.SerialNumber);
+            if (Device == null) { throw new SystemException("Device information could not be generated"); }
         }
 
         public static void Initialize(HomeCoreDbCtx ctx)

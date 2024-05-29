@@ -1,19 +1,16 @@
-﻿using Microsoft.AspNetCore.Identity.Data;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Management;
+﻿using System.Management;
 
-namespace HomeCore.Utility.Hardware
+namespace NetCommons.HwDevice.Hardware
 {
     public class DeviceInfo
     {
-        public string DeviceName { get; private set; }
-        public string? SerialNumber { get; private set; }
+        private static DeviceInfo? Inst { get; set; }
+
+        public string DeviceName { get; private set; } = "Unrecognized";
+        public string SerialNumber { get; private set; } = "XXXXXXXXXXXXXXX";
+        public string? OS { get; private set; }
 
         private DeviceInfo() {
-
-            DeviceName = "Unrecognized";
-            SerialNumber = "XXXXXXXXXXXXXXX";
 
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
@@ -34,6 +31,7 @@ namespace HomeCore.Utility.Hardware
             }
             else if (Environment.OSVersion.Platform == PlatformID.Unix)
             {
+                OS = "Unix";
                 throw new NotImplementedException("Device Info not implemented for Unix");
             } else
             {
@@ -43,7 +41,7 @@ namespace HomeCore.Utility.Hardware
 
         public static DeviceInfo GetDeviceInfo()
         {
-            return new DeviceInfo();
+            return Inst ??= new DeviceInfo();
         }
     }
 }

@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 
-namespace HomeCore.Data
+namespace NetCommons.Models
 {
     // Add profile data for application users by adding properties to the ApplicationUser class
     public class UserAccount : IdentityUser, INetRecord

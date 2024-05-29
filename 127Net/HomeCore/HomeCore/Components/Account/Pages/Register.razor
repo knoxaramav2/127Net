@@ -1,12 +1,13 @@
 ﻿@page "/Account/Register"
 
-@using HomeCore.Data
-@using HomeCore.Utility;
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
+@using NetCommons.Models
+@using NetCommons.Database
+@using NetCommons.HwDevice
 
 @inject UserManager<UserAccount> UserManager
 @inject IUserStore<UserAccount> UserStore
@@ -37,7 +38,7 @@
                 <ValidationMessage For="() => Input.Username" class="text-danger" />
             </div>
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" class="form-control" autocomplete="email" aria-required="true" placeholder="Email (optional)" />
+                <InputText @bind-Value="Input.Email" class="form-control" autocomplete="email" aria-required="false" placeholder="Email (optional)" />
                 <label for="email">Email</label>
                 <ValidationMessage For="() => Input.Email" class="text-danger" />
             </div>
@@ -104,20 +105,27 @@
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
 
-        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+        //await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
         if (UserManager.Options.SignIn.RequireConfirmedAccount)
         {
             RedirectManager.RedirectTo(
-                "Account/SystemSetup",
-                new() { ["username"] = Input.Username, ["returnUrl"] = ReturnUrl });
+                "Account/RegisterConfirmation",
+                new() { ["email"] = Input.Username, ["returnUrl"] = ReturnUrl });
         }
 
         await SignInManager.SignInAsync(user, isPersistent: false);
 
-        VerifyInitialSetup();
+        BondUserAccount(user);
+        VerifyInitialSetup(user.Id);
 
         RedirectManager.RedirectTo(ReturnUrl);
+    }
+
+    private void BondUserAccount(UserAccount user)
+    {
+        var device = SysState.Device;
+        DbCtx.DeviceOwners.Add(new DeviceOwner { DeviceId = device.Id, Device=device, OwnerId = user.Id, Owner=user });
     }
 
     private UserAccount CreateUser()
@@ -173,14 +181,13 @@
         return ret.ToArray();
     }
 
-    private void VerifyInitialSetup()
+    private void VerifyInitialSetup(string userId)
     {
-        bool hasAdmin = DbCtx.Users.Count(x => x.MaxAuthority.AuthLevel == 0) > 0;
-        if (!hasAdmin)
+        if (!SysState.HasAdmin)
         {
             RedirectManager.RedirectTo(
                 "Account/SystemSetup",
-                new() { ["username"] = Input.Username, ["returnUrl"] = ReturnUrl });
+                new() { ["username"] = Input.Username, ["userId"] = userId, ["returnUrl"] = ReturnUrl });
         }
     }
 
@@ -190,9 +197,9 @@
         [Display(Name = "Username")]
         public string Username { get; set; } = "";
 
-        [EmailAddress]
-        [Display(Name = "Email")]
-        public string Email { get; set; } = "";
+        [OptionalEmail]
+        [Display(Name = "Email (optional)")]
+        public string? Email { get; set; } = null;
 
         [Required]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
@@ -208,5 +215,14 @@
         //[Required]
         [Display(Name = "Authorized Role")]
         public RoleAuthority OperatingRole { get; set; } = null!;
+    }
+
+    private sealed class OptionalEmail: DataTypeAttribute
+    {
+        public OptionalEmail(): base(DataType.EmailAddress){}
+        public override bool IsValid(object value)
+        {
+            return string.IsNullOrEmpty((string)value) || base.IsValid(value);
+        }
     }
 }

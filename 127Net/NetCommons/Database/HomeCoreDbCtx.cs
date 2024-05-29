@@ -1,13 +1,11 @@
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
-using MySql.EntityFrameworkCore.DataAnnotations;
-using System.Diagnostics;
-using System.Reflection.Emit;
+using NetCommons.HwDevice.Hardware;
+using NetCommons.Models;
 
-namespace HomeCore.Data
+namespace NetCommons.Database
 {
-    public class HomeCoreDbCtx(DbContextOptions<HomeCoreDbCtx> options) 
+    public class HomeCoreDbCtx(DbContextOptions<HomeCoreDbCtx> options)
         : IdentityDbContext<UserAccount>(options)
     {
         public virtual DbSet<UserAccount> UserAccounts { get; set; }
@@ -24,7 +22,7 @@ namespace HomeCore.Data
             builder.Entity<UserAccount>(e => { e.HasKey(k => k.Id); });
             builder.Entity<DeviceOwner>(e => { e.HasKey(k => k.Id); });
             builder.Entity<RoleAuthority>(e => { e.HasKey(k => k.Id); });
-            builder.Entity<Device>(e => { e.HasKey(k => k.Id); });
+            builder.Entity<Device>(e => { e.HasKey(k => k.Id); e.HasIndex(x => x.HwId).IsUnique(); });
 
             builder.Entity<ConnectedDevice>(e =>
             {
@@ -72,16 +70,32 @@ namespace HomeCore.Data
                 .OnDelete(DeleteBehavior.Restrict);
             });
 
-
             RoleAuthority[] auths = [
                 new RoleAuthority{AuthLevel=0, ReauthTime=30, RoleName="Admin", Id=1, DowngradeId=2},
                 new RoleAuthority{AuthLevel=5, ReauthTime=300, RoleName="Owner", Id=2, DowngradeId=3},
                 new RoleAuthority{AuthLevel=10, ReauthTime=3600, RoleName="Guest", Id=3}
                 ];
 
+            var device = DeviceInfo.GetDeviceInfo();
             builder.Entity<RoleAuthority>().HasData(auths);
+            builder.Entity<Device>().HasData(
+            [
+                new() { DisplayName=device.DeviceName, HwId=device.SerialNumber, OS=device.OS, Users=[], Id=1 }
+            ]);
 
             base.OnModelCreating(builder);
+        }
+    
+        public bool AssignUserToDevice(UserAccount user, string deviceSerial)
+        {
+            var dvInfo = Devices.FirstOrDefault(x => x.HwId == deviceSerial);
+            if (dvInfo == null) { return false; }
+            else if (!DeviceOwners.Any(x => x.Owner.Id == user.Id))
+            {
+                DeviceOwners.Add(new DeviceOwner{ Device=dvInfo, DeviceId=dvInfo.Id, Owner=user, OwnerId=user.Id });
+            }
+
+            return true;
         }
     }
 }

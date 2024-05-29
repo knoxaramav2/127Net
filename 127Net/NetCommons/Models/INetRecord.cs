@@ -1,4 +1,4 @@
-﻿namespace HomeCore.Data
+﻿namespace NetCommons.Models
 {
     public interface INetRecord
     {

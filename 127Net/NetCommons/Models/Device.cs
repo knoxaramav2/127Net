@@ -1,8 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.InteropServices;
 
-namespace HomeCore.Data
+namespace NetCommons.Models
 {
     public class Device : INetRecord
     {
@@ -31,8 +30,8 @@ namespace HomeCore.Data
         [ForeignKey(nameof(DeviceId))]
         public required Device Device { get; set; }
 
-        public required string UserAcountId { get; set; }
-        [ForeignKey(nameof(UserAcountId))]
+        public required string OwnerId { get; set; }
+        [ForeignKey(nameof(OwnerId))]
         public required UserAccount Owner { get; set; }
 
         public DateTime? DeletedOn { get; set; }

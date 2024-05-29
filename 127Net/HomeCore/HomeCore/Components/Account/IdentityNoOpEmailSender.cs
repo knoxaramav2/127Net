@@ -1,6 +1,6 @@
-using HomeCore.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using NetCommons.Models;
 
 namespace HomeCore.Components.Account
 {

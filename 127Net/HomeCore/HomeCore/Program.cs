@@ -1,13 +1,11 @@
-using HomeCore.Client.Pages;
 using HomeCore.Components;
 using HomeCore.Components.Account;
-using HomeCore.Data;
-using HomeCore.Client;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using HomeCore.Utility;
-using Microsoft.Extensions.Options;
+using NetCommons.Database;
+using NetCommons.HwDevice;
+using NetCommons.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 

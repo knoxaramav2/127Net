@@ -1,5 +1,5 @@
-using HomeCore.Data;
 using Microsoft.AspNetCore.Identity;
+using NetCommons.Models;
 
 namespace HomeCore.Components.Account
 {
