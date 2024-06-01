@@ -1,17 +1,16 @@
-package com.knx.homemobile.ui.slideshow
+package com.knx.homemobile.ui.devices
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.knx.homemobile.databinding.FragmentSlideshowBinding
+import com.knx.homemobile.databinding.FragmentDevicesBinding
 
-class SlideshowFragment : Fragment() {
+class DevicesFragment(): Fragment() {
 
-    private var _binding: FragmentSlideshowBinding? = null
+    private var _binding: FragmentDevicesBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -23,15 +22,17 @@ class SlideshowFragment : Fragment() {
             savedInstanceState: Bundle?
     ): View {
         val slideshowViewModel =
-                ViewModelProvider(this).get(SlideshowViewModel::class.java)
+                ViewModelProvider(this).get(DevicesViewModel::class.java)
 
-        _binding = FragmentSlideshowBinding.inflate(inflater, container, false)
+        _binding = FragmentDevicesBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textSlideshow
-        slideshowViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+        var deviceList = binding.deviceList
+        binding.deviceAddBtn.setOnClickListener{
+            //val newDevice = device_select(context)
+            //deviceList.addView(newDevice)
         }
+
         return root
     }
 

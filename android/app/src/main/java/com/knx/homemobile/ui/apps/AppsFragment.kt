@@ -1,4 +1,4 @@
-package com.knx.homemobile.ui.gallery
+package com.knx.homemobile.ui.apps
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,11 +7,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.knx.homemobile.databinding.FragmentGalleryBinding
+import com.knx.homemobile.databinding.FragmentAppsBinding
+import com.knx.homemobile.databinding.FragmentDevicesBinding
+import org.w3c.dom.Text
 
-class GalleryFragment : Fragment() {
+class AppsFragment : Fragment() {
 
-    private var _binding: FragmentGalleryBinding? = null
+    private var _binding: FragmentAppsBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -23,15 +25,16 @@ class GalleryFragment : Fragment() {
             savedInstanceState: Bundle?
     ): View {
         val galleryViewModel =
-                ViewModelProvider(this).get(GalleryViewModel::class.java)
+                ViewModelProvider(this).get(AppsViewModel::class.java)
 
-        _binding = FragmentGalleryBinding.inflate(inflater, container, false)
+        _binding = FragmentAppsBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textGallery
+        val textView: TextView = binding.textApps
         galleryViewModel.text.observe(viewLifecycleOwner) {
             textView.text = it
         }
+
         return root
     }
 

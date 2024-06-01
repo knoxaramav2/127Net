@@ -8,10 +8,15 @@ namespace NetCommons.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        [StringLength(128)]
         public required string DisplayName { get; set; }
+        [StringLength(128)]
         public required string HwId { get; set; }
+        [StringLength(128)]
         public string? Manufacturer { get; set; }
+        [StringLength(128)]
         public string? OS { get; set; }
+        [StringLength(128)]
         public string? FriendlyName { get; set; }
         public required ICollection<UserAccount> Users { get; set; } = [];
         public DateTime? DeletedOn { get; set; }

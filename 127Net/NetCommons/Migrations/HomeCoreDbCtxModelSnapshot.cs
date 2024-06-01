@@ -176,20 +176,25 @@ namespace NetCommons.Migrations
 
                     b.Property<string>("DisplayName")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.Property<string>("FriendlyName")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.Property<string>("HwId")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.Property<string>("Manufacturer")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.Property<string>("OS")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.HasKey("Id");
 
@@ -238,9 +243,14 @@ namespace NetCommons.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("ComponentName")
+                    b.Property<string>("AppData")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<string>("ComponentName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.Property<DateTime?>("DeletedOn")
                         .HasColumnType("datetime(6)");
@@ -248,6 +258,9 @@ namespace NetCommons.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("FirstReleaseTime")
                         .HasColumnType("datetime(6)");
@@ -260,7 +273,8 @@ namespace NetCommons.Migrations
 
                     b.Property<string>("Version")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
 
                     b.HasKey("Id");
 
@@ -275,16 +289,18 @@ namespace NetCommons.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("ComponentLibId")
+                    b.Property<string>("ComponentLibName")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.Property<DateTime?>("DeletedOn")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("FunctionId")
+                    b.Property<string>("FunctionName")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.Property<int?>("NetComponentId")
                         .HasColumnType("int");
@@ -293,7 +309,7 @@ namespace NetCommons.Migrations
 
                     b.HasIndex("NetComponentId");
 
-                    b.ToTable("NetControls");
+                    b.ToTable("NetControl");
                 });
 
             modelBuilder.Entity("NetCommons.Models.NetListener", b =>
@@ -346,7 +362,8 @@ namespace NetCommons.Migrations
 
                     b.Property<string>("RoleName")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.HasKey("Id");
 

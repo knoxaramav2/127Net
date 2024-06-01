@@ -8,6 +8,7 @@ namespace NetCommons.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        [StringLength(128)]
         public required string RoleName { get; set; }
         public int AuthLevel { get; set; }
         public bool ForceCredential { get; set; }

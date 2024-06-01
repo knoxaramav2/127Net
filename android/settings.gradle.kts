@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "HomeMobile"
 include(":app")
+include(":NetCommons")

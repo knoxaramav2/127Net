@@ -17,7 +17,7 @@ namespace NetCommons.Database
         public virtual DbSet<DeviceOwner> DeviceOwners { get; set; }
         public virtual DbSet<RoleAuthority> AuthRoles { get; set; }
         public virtual DbSet<NetComponent> NetComponents { get; set; }
-        public virtual DbSet<NetControl> NetControls { get; set; }
+        //public virtual DbSet<NetControl> NetControls { get; set; }
         public virtual DbSet<NetListener> NetListeners { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
