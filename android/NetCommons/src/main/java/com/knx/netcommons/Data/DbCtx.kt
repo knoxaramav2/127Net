@@ -24,20 +24,21 @@ public class TimestampConverter {
     RoleAuthority::class, UserAccount::class,
     Device::class, DeviceOwner::class, ConnectedDevices::class,
     NetComponent::class, NetListener::class,
-    NetMetaData::class,
-                     ], version=3)
+    NetMetaData::class, //TrustContract::class
+                      TransientCertificate::class
+                     ], version=1)
 @TypeConverters(TimestampConverter::class)
 abstract class DbCtx : RoomDatabase(){
-
     abstract fun getDao(): OTSDao
     companion object {
         @Volatile
         private var instance: DbCtx? = null
-
-        fun getInstance(context: Context) =
+        private const val DB_NAME = "OTSMobileDb"
+        fun getInstance(context: Context, rebuildDb: Boolean = false) =
             instance ?: synchronized(this){
+                if(rebuildDb) { context.deleteDatabase(DB_NAME) }
                 instance ?: Room.databaseBuilder(context,
-                    DbCtx::class.java, "OTSMobileDb")
+                    DbCtx::class.java, DB_NAME)
                     .fallbackToDestructiveMigration()
                     .allowMainThreadQueries()
                     .build()

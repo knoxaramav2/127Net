@@ -25,6 +25,13 @@ android {
             )
         }
     }
+
+    testOptions{
+        unitTests{
+            isIncludeAndroidResources = true
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_13
         targetCompatibility = JavaVersion.VERSION_13
@@ -39,6 +46,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
+    implementation(libs.core.ktx)
+    implementation(libs.androidx.junit.ktx)
+    implementation(libs.androidx.runner)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -47,6 +57,9 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.room.runtime)
+
+    //testImplementation(libs.org.roboelectric)
+    testImplementation("org.robolectric:robolectric:4.12.2")
     //annotationProcessor(libs.androidx.room.compiler)
 
 }
