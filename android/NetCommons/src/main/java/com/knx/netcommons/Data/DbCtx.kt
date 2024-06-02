@@ -24,8 +24,8 @@ public class TimestampConverter {
     RoleAuthority::class, UserAccount::class,
     Device::class, DeviceOwner::class, ConnectedDevices::class,
     NetComponent::class, NetListener::class,
-    NetMetaData::class, //TrustContract::class
-                      TransientCertificate::class
+    NetMetaData::class, //TrustContract::class,
+                      //TransientCertificate::class
                      ], version=1)
 @TypeConverters(TimestampConverter::class)
 abstract class DbCtx : RoomDatabase(){

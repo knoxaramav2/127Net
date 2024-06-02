@@ -9,6 +9,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Update
 import java.util.Date
 import java.util.UUID
 import kotlin.random.Random
@@ -34,6 +35,13 @@ data class RoleAuthority(
     @ColumnInfo(name="reauthorizeTime") val reauthTime: Int = -1,
 )
 
+data class RoleAuthorityUpdate(
+    val id: Int,
+    val downgrade: Int?,
+    val authLevel: Int,
+    val reauthTime: Int,
+)
+
 @Entity(tableName = UserAccountTable,
     foreignKeys = [
         ForeignKey(
@@ -56,8 +64,23 @@ data class UserAccount(
     @ColumnInfo(name="operatingAuthority", index = true) val operatingAuthority : Int,
     @ColumnInfo(name="networkUserId") val networkUserId : String = UUID.randomUUID().toString(),
     @ColumnInfo(name="displayName") val displayName: String = "User",
-    @ColumnInfo(name="passwordHash") val passwordHash: String? = null,
-    @ColumnInfo(name="salt") val salt: Long = Random.nextLong()
+    @ColumnInfo(name="saltedHash") val saltedHash: String,
+)
+
+data class UserAccountAuthUpdate(
+    val id: Int,
+    val maxAuthority: Int,
+    val operatingAuthority: Int
+)
+
+data class UserAccountOperatingAuthUpdate(
+    val id: Int,
+    val operatingAuthority: Int
+)
+
+data class UserAccountPasswordUpdate(
+    val id: Int,
+    val saltedHash: String
 )
 
 @Entity(tableName = DeviceTable)
@@ -68,6 +91,11 @@ data class Device(
     @ColumnInfo(name="displayName") val displayName: String = "Mobile Net",
     @ColumnInfo(name="hwId") val hwId: String,
     @ColumnInfo(name="os") val os: String = "Android",
+)
+
+data class DeviceDisplayNameUpdate(
+    val id: Int,
+    val displayName: String
 )
 
 @Entity(tableName = DeviceOwnerTable, foreignKeys = [
@@ -102,9 +130,15 @@ data class TrustContract(
 )
 
 //Probably a security nightmare, revisit when less tired
-@Entity(tableName = TransientCertificateTable)
+@Entity(tableName = TransientCertificateTable, foreignKeys = [
+    ForeignKey(entity = DeviceOwner::class,
+        parentColumns = ["id"], childColumns = ["issuerId"], onDelete = ForeignKey.CASCADE),
+], indices = [
+    Index(name = "issuer", value = ["issuerId"])
+])
 data class TransientCertificate(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name="issuerId") val issuerId: Int,
     @ColumnInfo(name="deletedOn") val deletedOn: Date? = null,
     @ColumnInfo(name="issueDate") val issueDate: Date,
     @ColumnInfo(name="token") val token: String,
@@ -117,13 +151,15 @@ data class TransientCertificate(
         parentColumns = ["id"], childColumns = ["device1"], onDelete = ForeignKey.CASCADE),
     ForeignKey(entity = Device::class,
         parentColumns = ["id"], childColumns = ["device2"], onDelete = ForeignKey.CASCADE),
-    ForeignKey(entity = TransientCertificate::class,
-        parentColumns = ["id"], childColumns = ["transientCertificate"], onDelete = ForeignKey.CASCADE),
-], indices = [Index(value = ["device1", "device2"], name = "device_pair", unique = true)])
+//    ForeignKey(entity = TransientCertificate::class,
+//        parentColumns = ["id"], childColumns = ["transientCertificate"], onDelete = ForeignKey.CASCADE),
+]
+    // , indices = [Index(value = ["device1", "device2"], name = "device_pair", unique = true)]
+)
 data class ConnectedDevices(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name="deletedOn") val deletedOn: Date? = null,
-    @ColumnInfo(name="transientCertificate", index = true) val transientCertificate: Int,
+    //@ColumnInfo(name="transientCertificate", index = true) val transientCertificate: Int? = null,
     @ColumnInfo(name="device1", index = true) val device1: Int,
     @ColumnInfo(name="device2", index = true) val device2: Int,
 )
@@ -144,7 +180,7 @@ data class NetComponent(
 @Entity(tableName = NetListenerTable, foreignKeys = [
     ForeignKey(entity = Device::class,
         parentColumns = ["id"], childColumns = ["device"], onDelete = ForeignKey.RESTRICT)
-])
+], indices = [Index(name = "device", value = ["device"], )])
 data class NetListener(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name="deletedOn") val deletedOn: Date? = null,
@@ -169,15 +205,23 @@ interface OTSDao{
 
     @Query("SELECT * FROM $UserAccountTable")
     fun getUsers(): List<UserAccount>
+    @Query("SELECT * FROM $UserAccountTable WHERE id=:id")
+    fun getUser(id:Int): UserAccount?
 
     @Query("SELECT * FROM $RoleAuthorityTable")
     fun getAuthorities(): List<RoleAuthority>
 
+    @Query("SELECT * FROM $RoleAuthorityTable WHERE id=:authId")
+    fun getAuthority(authId:Int): RoleAuthority?
+
+    @Query("SELECT * FROM $RoleAuthorityTable WHERE roleName=:roleName")
+    fun getAuthority(roleName:String): RoleAuthority?
+
     @Query("SELECT COUNT() FROM $NetMetaDataTable")
     fun countSignIns(): Int
 
-    @Query("SELECT * FROM $ConnectedDeviceTable")
-    fun getDeviceConnections(): List<ConnectedDevices>
+    @Query("SELECT * FROM $ConnectedDeviceTable where :deviceId=device1 OR :deviceId=device2")
+    fun getDeviceConnections(deviceId:Int): List<ConnectedDevices>
 
     @Query("SELECT * FROM $DeviceOwnerTable WHERE owner = :userId")
     fun getDeviceOwnership(userId:Int): List<DeviceOwner>
@@ -188,8 +232,17 @@ interface OTSDao{
     @Insert fun addDevice(device:Device) : Long
     @Insert fun addDeviceOwner(deviceOwner:DeviceOwner) : Long
     @Insert(onConflict = OnConflictStrategy.ABORT) fun addRoleAuthority(role:RoleAuthority) : Long
+    @Insert fun connectDevices(connection:ConnectedDevices)
 
     //Deletes
 
     //Updates
+    @Update(entity = UserAccount::class)
+    fun updatePassword(update:UserAccountPasswordUpdate)
+
+    @Update(entity = UserAccount::class)
+    fun updateUserAuth(update:UserAccountAuthUpdate)
+
+    @Update(entity = UserAccount::class)
+    fun updateOperatingLevel(update:UserAccountOperatingAuthUpdate)
 }

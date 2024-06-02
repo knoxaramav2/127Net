@@ -12,6 +12,7 @@ lifecycleLivedataKtx = "2.8.1"
 lifecycleViewmodelKtx = "2.8.1"
 navigationFragmentKtx = "2.7.7"
 navigationUiKtx = "2.7.7"
+robolectric = "4.12.2"
 room_version = "2.6.1"
 kspVersion = "2.0.0-1.0.21"
 daggerVersion = "2.51.1"
@@ -19,6 +20,7 @@ coreKtxVersion = "1.5.0"
 junitKtx = "1.1.5"
 runner = "1.5.2"
 roboElectric = "4.12.2"
+jbcrypt = "0.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,6 +43,8 @@ core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "coreKtxV
 androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
 androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
 org-roboelectric = { group = "org.roboelectric", name="roboelectric", version.ref = "roboElectric" }
+org-mindrot-jbcrypt = { group="org.mindrot", name="jbcrypt", version.ref="jbcrypt" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

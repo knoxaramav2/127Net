@@ -57,9 +57,10 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.room.runtime)
+    implementation(libs.org.mindrot.jbcrypt)
 
     //testImplementation(libs.org.roboelectric)
-    testImplementation("org.robolectric:robolectric:4.12.2")
+    testImplementation(libs.robolectric)
     //annotationProcessor(libs.androidx.room.compiler)
 
 }
