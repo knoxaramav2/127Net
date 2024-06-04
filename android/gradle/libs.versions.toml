@@ -21,6 +21,10 @@ junitKtx = "1.1.5"
 runner = "1.5.2"
 roboElectric = "4.12.2"
 jbcrypt = "0.4"
+legacySupportV4 = "1.0.0"
+fragmentKtx = "1.7.1"
+annotation = "1.8.0"
+activity = "1.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +49,10 @@ androidx-runner = { group = "androidx.test", name = "runner", version.ref = "run
 org-roboelectric = { group = "org.roboelectric", name="roboelectric", version.ref = "roboElectric" }
 org-mindrot-jbcrypt = { group="org.mindrot", name="jbcrypt", version.ref="jbcrypt" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
+androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

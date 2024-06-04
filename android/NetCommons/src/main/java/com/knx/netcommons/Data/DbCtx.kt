@@ -34,15 +34,30 @@ abstract class DbCtx : RoomDatabase(){
         @Volatile
         private var instance: DbCtx? = null
         private const val DB_NAME = "OTSMobileDb"
-        fun getInstance(context: Context, rebuildDb: Boolean = false) =
-            instance ?: synchronized(this){
-                if(rebuildDb) { context.deleteDatabase(DB_NAME) }
-                instance ?: Room.databaseBuilder(context,
-                    DbCtx::class.java, DB_NAME)
+        fun getInstance(context: Context, rebuildDb: Boolean = false) : DbCtx {
+            instance ?: synchronized(this) {
+                if (rebuildDb) {
+                    context.deleteDatabase(DB_NAME)
+                }
+                instance ?: Room.databaseBuilder(
+                    context,
+                    DbCtx::class.java, DB_NAME
+                )
                     .fallbackToDestructiveMigration()
                     .allowMainThreadQueries()
                     .build()
+                val dao = instance?.getDao()!!
+                initDefaults(dao)
             }
+
+            return instance!!
+        }
+
+        private fun initDefaults(dao:OTSDao){
+            dao.addRoleAuthority(RoleAuthority(id = 3, roleName = "Guest", authLevel = 2))
+            dao.addRoleAuthority(RoleAuthority(id = 2, roleName = "User", authLevel = 1, downgrade = 3))
+            dao.addRoleAuthority(RoleAuthority(id = 1, roleName = "Admin", authLevel = 0, downgrade = 2, reauthTime = 60))
+        }
     }
 }
 

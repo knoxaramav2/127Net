@@ -1,5 +1,6 @@
 package com.knx.homemobile
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -12,14 +13,9 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import com.knx.homemobile.databinding.ActivityMainBinding
-import com.knx.netcommons.Data.DbCtx
-import com.knx.netcommons.Data.Device
-import com.knx.netcommons.Data.DeviceOwner
+import com.knx.homemobile.ui.main.TabbedAuthorizationFragment
+import com.knx.homemobile.ui.main.TabbedAuthorizationPages
 import com.knx.netcommons.Data.LocalData
-import com.knx.netcommons.Data.NetMetaData
-import com.knx.netcommons.Data.RoleAuthority
-import com.knx.netcommons.Data.UserAccount
-import java.util.Date
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,8 +27,6 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        systemInits()
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
@@ -47,6 +41,11 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController)
     }
 
+    override fun onResume() {
+        enforceLogin()
+        super.onResume()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
@@ -58,38 +57,14 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
-    private fun systemInits(){
-        val currDate = Date()
+    private fun enforceLogin(){
+        Log.d("OTS_INFO", "ENFORCE LOGIN")
         localData = LocalData()
+        if (localData!!.isSetupComplete()) { return  }
 
-        try{
-            val dao = DbCtx.getInstance(this, true).getDao()
-            val metaData = NetMetaData(signInDate = currDate)
-            dao.addSignIn(metaData)
-
-            if (!localData!!.isSetupComplete()){
-
-                dao.addRoleAuthority(RoleAuthority(id = 3, roleName = "Guest", authLevel = 2))
-                dao.addRoleAuthority(RoleAuthority(id = 2, roleName = "User", authLevel = 1, downgrade = 3))
-                dao.addRoleAuthority(RoleAuthority(id = 1, roleName = "Admin", authLevel = 0, downgrade = 2, reauthTime = 60))
-
-                val user = UserAccount(maxAuthority = 1, operatingAuthority = 2)
-                val device = Device(address = "", hwId = localData!!.getGuid(),
-                    os = localData!!.getOS())
-
-                val deviceId = dao.addDevice(device).toInt()
-                val userId = dao.addUserAccount(user).toInt()
-                val owner = DeviceOwner(device = deviceId, owner = userId)
-                dao.addDeviceOwner(owner)
-
-                localData!!.setSetupComplete()
-            }
-
-            Log.d("OTS_INFO", "App start successful")
-
-        } catch (ex: Exception){
-            Log.d("OTS_ERR", currDate.toString() + " : " + ex.message.toString())
-        }
+        val loginIntent = Intent(this, TabbedAuthorizationActivity::class.java)
+        loginIntent.putExtra(TabbedAuthorizationFragment.EXTRA_SOLE_PAGE, TabbedAuthorizationPages.RegisterPage.value)
+        startActivity(loginIntent)
 
     }
 

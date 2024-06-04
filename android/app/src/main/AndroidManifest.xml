@@ -13,9 +13,13 @@
         android:theme="@style/Theme.HomeMobile"
         tools:targetApi="31">
         <activity
+            android:name=".TabbedAuthorizationActivity"
+            android:exported="false"
+            android:label="@string/title_activity_tabbed_authorization"
+            android:theme="@style/Theme.HomeMobile.NoActionBar" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.HomeMobile.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

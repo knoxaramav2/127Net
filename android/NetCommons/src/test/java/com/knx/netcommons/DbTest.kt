@@ -20,7 +20,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import secure.encryption
+import secure.Encryption
 
 @RunWith(RobolectricTestRunner::class)
 @LargeTest
@@ -49,8 +49,7 @@ class DbTest {
 
     private fun addUser(): Int{
         val password = "MobilePassword"
-        val salt = encryption.getSalt()
-        val saltHash = encryption.hashPassword(password, salt)
+        val saltHash = Encryption.Irreversible.hashPassword(password)
         val user = UserAccount(maxAuthority = 1, operatingAuthority = 2, saltedHash = saltHash)
         val userId = dao.addUserAccount(user).toInt()
         return userId
@@ -68,7 +67,7 @@ class DbTest {
         val userId = addUser()
         val oldHash = dao.getUser(userId)?.saltedHash!!
         val newPassword = "NewPassword"
-        val newHash = encryption.hashPassword(newPassword)
+        val newHash = Encryption.Irreversible.hashPassword(newPassword)
         val update = UserAccountPasswordUpdate(id = userId, saltedHash = newHash)
         dao.updatePassword(update)
         val user = dao.getUser(userId)!!
@@ -76,7 +75,7 @@ class DbTest {
         println(oldHash)
         println(newHash)
         println(updatedHash)
-        assert(encryption.checkPassword(newPassword, user.saltedHash))
+        assert(Encryption.Irreversible.checkPassword(newPassword, user.saltedHash))
     }
 
     @Test
