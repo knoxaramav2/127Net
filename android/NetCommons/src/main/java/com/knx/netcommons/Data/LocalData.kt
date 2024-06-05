@@ -57,6 +57,13 @@ class LocalData() : Closeable {
         }
     }
 
+    fun resetHard() : LocalData {
+        isLoaded = false
+        val file = File("$LOCAL_DIR_NAME/$LOCAL_FILE_NAME")
+        if(file.exists()){ file.delete() }
+        return LocalData()
+    }
+
     override fun close() { writeData() }
 
     companion object{

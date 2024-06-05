@@ -19,36 +19,20 @@ private val TAB_TITLES = arrayOf(
  * A [FragmentPagerAdapter] that returns a fragment corresponding to
  * one of the sections/tabs/pages.
  */
-class SectionsPagerAdapter(fm: FragmentManager, lifecycle: Lifecycle) :
+class AuthorizePagerAdapter(fm: FragmentManager, lifecycle: Lifecycle) :
     FragmentStateAdapter(fm, lifecycle) {
 
-//    override fun getItem(position: Int): Fragment {
-//        // getItem is called to instantiate the fragment for the given page.
-//        // Return a PlaceholderFragment.
-//        return TabbedAuthorizationFragment.newInstance(position + 1)
-//    }
-//
-//    override fun getPageTitle(position: Int): CharSequence? {
-//        return context.resources.getString(TAB_TITLES[position])
-//    }
-//
-//    override fun getCount(): Int {
-//        // Show 2 total pages.
-//        return 2
-//    }
-
-
     override fun getItemCount(): Int {
-        return TabbedAuthorizationPages.entries.size
+        return AuthorizationPages.entries.size
     }
 
     override fun createFragment(position: Int): Fragment {
-        return TabbedAuthorizationFragment.newInstance(position)
+        return AuthorizationFragment.newInstance(position)
     }
 
     fun setTab(tabLayout:TabLayout, viewPager:ViewPager2){
         TabLayoutMediator(tabLayout, viewPager){tab, position ->
-            tab.text = TabbedAuthorizationPages.fromInt(position).toString()
+            tab.text = AuthorizationPages.fromInt(position).toString()
         }.attach()
     }
 }

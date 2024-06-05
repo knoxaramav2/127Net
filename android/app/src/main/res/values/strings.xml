@@ -85,5 +85,14 @@
     <string name="tab_text_1">Tab 1</string>
     <string name="tab_text_2">Tab 2</string>
     <string name="title_activity_tabbed_authorization">TabbedAuthorizationActivity</string>
+    <string name="placeholder">placeholder</string>
+
+    <string name="err_password_mismatch">Passwords do not match</string>
+    <string name="err_user_exists">User already exists</string>
+    <string name="err_invalid_login">User already exists</string>
+    <string name="err_invalid_username">Invalid username</string>
+    <string name="err_invalid_password">Invalid password</string>
+    <string name="err_incorrect_login">Username or password is incorrect</string>
+    <string name="err_failed_to_register">An error occurred trying to register account</string>
 
 </resources>

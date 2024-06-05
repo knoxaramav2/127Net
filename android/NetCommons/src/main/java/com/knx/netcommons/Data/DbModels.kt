@@ -64,8 +64,15 @@ data class UserAccount(
     @ColumnInfo(name="operatingAuthority", index = true) val operatingAuthority : Int,
     @ColumnInfo(name="networkUserId") val networkUserId : String = UUID.randomUUID().toString(),
     @ColumnInfo(name="displayName") val displayName: String = "User",
+    @ColumnInfo(name="username") val username: String,
+    @ColumnInfo(name="normalizedUsername") val normalizedUsername: String,
     @ColumnInfo(name="saltedHash") val saltedHash: String,
-)
+    ){
+    init{
+        require(username.length > 2)
+        require(username.uppercase() == normalizedUsername)
+    }
+}
 
 data class UserAccountAuthUpdate(
     val id: Int,
@@ -207,6 +214,9 @@ interface OTSDao{
     fun getUsers(): List<UserAccount>
     @Query("SELECT * FROM $UserAccountTable WHERE id=:id")
     fun getUser(id:Int): UserAccount?
+
+    @Query("SELECT * FROM $UserAccountTable WHERE normalizedUsername LIKE UPPER(:username)")
+    fun getUser(username:String): UserAccount?
 
     @Query("SELECT * FROM $RoleAuthorityTable")
     fun getAuthorities(): List<RoleAuthority>

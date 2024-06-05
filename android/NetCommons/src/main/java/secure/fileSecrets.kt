@@ -1,7 +1,0 @@
-package secure
-
-class fileSecrets {
-
-
-
-}

@@ -1,6 +1,7 @@
 package com.knx.netcommons.Data
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -39,24 +40,36 @@ abstract class DbCtx : RoomDatabase(){
                 if (rebuildDb) {
                     context.deleteDatabase(DB_NAME)
                 }
-                instance ?: Room.databaseBuilder(
+                instance = instance ?: Room.databaseBuilder(
                     context,
                     DbCtx::class.java, DB_NAME
                 )
                     .fallbackToDestructiveMigration()
                     .allowMainThreadQueries()
                     .build()
-                val dao = instance?.getDao()!!
-                initDefaults(dao)
+                val dao = instance?.getDao()
+                if (dao!=null){
+                    initDefaults(dao)
+                } else {
+                    val err = "DAO Failed to build. REBUILD=$rebuildDb"
+                    Log.d("LOG_INFO", err)
+                    throw Exception(err)
+                }
+
             }
 
             return instance!!
         }
 
         private fun initDefaults(dao:OTSDao){
-            dao.addRoleAuthority(RoleAuthority(id = 3, roleName = "Guest", authLevel = 2))
-            dao.addRoleAuthority(RoleAuthority(id = 2, roleName = "User", authLevel = 1, downgrade = 3))
-            dao.addRoleAuthority(RoleAuthority(id = 1, roleName = "Admin", authLevel = 0, downgrade = 2, reauthTime = 60))
+            try{
+                dao.addRoleAuthority(RoleAuthority(id = 3, roleName = "Guest", authLevel = 2))
+                dao.addRoleAuthority(RoleAuthority(id = 2, roleName = "User", authLevel = 1, downgrade = 3))
+                dao.addRoleAuthority(RoleAuthority(id = 1, roleName = "Admin", authLevel = 0, downgrade = 2, reauthTime = 60))
+            }catch (e:Exception){
+                Log.d("OTS_INFO", "Skipped initial authorities: $e")
+            }
+
         }
     }
 }

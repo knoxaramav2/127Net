@@ -13,8 +13,9 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import com.knx.homemobile.databinding.ActivityMainBinding
-import com.knx.homemobile.ui.main.TabbedAuthorizationFragment
-import com.knx.homemobile.ui.main.TabbedAuthorizationPages
+import com.knx.homemobile.ui.main.AuthorizationFragment
+import com.knx.homemobile.ui.main.AuthorizationPages
+import com.knx.netcommons.Data.DbCtx
 import com.knx.netcommons.Data.LocalData
 
 class MainActivity : AppCompatActivity() {
@@ -24,6 +25,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if(REBUILD_ALL){ cleanSlate() }
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -59,16 +62,23 @@ class MainActivity : AppCompatActivity() {
 
     private fun enforceLogin(){
         Log.d("OTS_INFO", "ENFORCE LOGIN")
+
         localData = LocalData()
         if (localData!!.isSetupComplete()) { return  }
 
-        val loginIntent = Intent(this, TabbedAuthorizationActivity::class.java)
-        loginIntent.putExtra(TabbedAuthorizationFragment.EXTRA_SOLE_PAGE, TabbedAuthorizationPages.RegisterPage.value)
+        val loginIntent = Intent(this, AuthorizationActivity::class.java)
+        loginIntent.putExtra(AuthorizationFragment.EXTRA_SOLE_PAGE, AuthorizationPages.RegisterPage.value)
+        loginIntent.putExtra(AuthorizationFragment.EXTRA_ADMIN_REGISTER, true)
         startActivity(loginIntent)
+    }
 
+    private fun cleanSlate(){
+        DbCtx.getInstance(this, true)
+        LocalData().resetHard()
     }
 
     companion object{
         var localData: LocalData? = null
+        const val REBUILD_ALL: Boolean = true
     }
 }

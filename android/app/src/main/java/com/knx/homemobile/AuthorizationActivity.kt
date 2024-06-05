@@ -6,23 +6,23 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
-import com.knx.homemobile.databinding.ActivityTabbedAuthorizationBinding
-import com.knx.homemobile.ui.main.SectionsPagerAdapter
-import com.knx.homemobile.ui.main.TabbedAuthorizationFragment
-import com.knx.homemobile.ui.main.TabbedAuthorizationPages
+import com.knx.homemobile.databinding.ActivityAuthorizationBinding
+import com.knx.homemobile.ui.main.AuthorizationFragment
+import com.knx.homemobile.ui.main.AuthorizationPages
+import com.knx.homemobile.ui.main.AuthorizePagerAdapter
 
-class TabbedAuthorizationActivity : AppCompatActivity() {
+class AuthorizationActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityTabbedAuthorizationBinding
+    private lateinit var binding: ActivityAuthorizationBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val args = AuthArgs(intent)
 
-        binding = ActivityTabbedAuthorizationBinding.inflate(layoutInflater)
+        binding = ActivityAuthorizationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val adapter = SectionsPagerAdapter(supportFragmentManager, lifecycle)
+        val adapter = AuthorizePagerAdapter(supportFragmentManager, lifecycle)
         val viewPager: ViewPager2 = binding.viewPager
         viewPager.adapter = adapter
 
@@ -32,15 +32,16 @@ class TabbedAuthorizationActivity : AppCompatActivity() {
         viewPager.currentItem = args.startPage
         if (args.solePage >= 0){
             viewPager.isUserInputEnabled = false
-            TabbedAuthorizationPages.entries.forEach{
+            AuthorizationPages.entries.forEach{
                 if (it.value != args.startPage){(tabs.getTabAt(it.value)?.view)?.visibility = View.GONE}
             }
         }
     }
 
     class AuthArgs(intent:Intent){
-        var startPage = intent.getIntExtra(TabbedAuthorizationFragment.EXTRA_START_PAGE, TabbedAuthorizationPages.LoginPage.value)
-        val solePage = intent.getIntExtra(TabbedAuthorizationFragment.EXTRA_SOLE_PAGE, -1)
+        var startPage = intent.getIntExtra(AuthorizationFragment.EXTRA_START_PAGE, AuthorizationPages.LoginPage.value)
+        val solePage = intent.getIntExtra(AuthorizationFragment.EXTRA_SOLE_PAGE, -1)
+        val asAdmin = intent.getBooleanExtra(AuthorizationFragment.EXTRA_ADMIN_REGISTER, false)
 
         init {
             if (solePage >= 0) { startPage = solePage }
