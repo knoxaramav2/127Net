@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.knx.otsmobile.ui.home.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_nav_home_to_nav_apps"
+            app:destination="@id/nav_apps" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_apps"
+        android:name="com.knx.otsmobile.ui.apps.AppsFragment"
+        android:label="@string/menu_apps"
+        tools:layout="@layout/fragment_apps" >
+        <action
+            android:id="@+id/action_nav_apps_to_nav_devices"
+            app:destination="@id/nav_devices" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_devices"
+        android:name="com.knx.otsmobile.ui.device.DeviceFragment"
+        android:label="@string/menu_devices"
+        tools:layout="@layout/fragment_devices" >
+        <action
+            android:id="@+id/action_nav_devices_to_nav_network"
+            app:destination="@id/nav_network" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_network"
+        android:name="com.knx.otsmobile.ui.network.NetworkFragment"
+        android:label="@string/menu_networks"
+        tools:layout="@layout/fragment_network" />
+</navigation>

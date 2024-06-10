@@ -1,0 +1,50 @@
+<resources>
+    <string name="app_name">OTSMobile</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">OTS Mobile</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_apps">Apps</string>
+    <string name="menu_devices">Devices</string>
+    <string name="menu_networks">Network</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_auth">AuthActivity</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+    <string name="title_activity_authentication">AuthenticationActivity</string>
+    <string name="placeholder">placeholder</string>
+    <string name="repeat_password">Repeat Password</string>
+    <string name="password">Password</string>
+    <string name="username">Username</string>
+    <string name="Register">Register</string>
+    <string name="Login">Login</string>
+    <string name="Logout">Logout</string>
+
+    <string name="err_password_mismatch">Passwords do not match</string>
+    <string name="err_username_exists">Username already exists</string>
+    <string name="err_incorrect_password">Incorrect Password</string>
+    <string name="err_register_failed">Incorrect Password</string>
+    <string name="err_authentication_failed">Incorrect Password</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+    <string name="persist_login">"Keep Signed In"</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="display_name">Display Name</string>
+</resources>

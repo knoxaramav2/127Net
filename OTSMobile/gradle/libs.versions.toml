@@ -1,0 +1,65 @@
+[versions]
+agp = "8.4.1"
+kotlin = "2.0.0"
+coreKtx = "1.13.1"
+junit = "4.13.2"
+junitVersion = "1.1.5"
+espressoCore = "3.5.1"
+appcompat = "1.7.0"
+material = "1.12.0"
+constraintlayout = "2.1.4"
+lifecycleLivedataKtx = "2.8.1"
+lifecycleViewmodelKtx = "2.8.1"
+navigationFragmentKtx = "2.7.7"
+navigationUiKtx = "2.7.7"
+robolectric = "4.12.2"
+room_version = "2.6.1"
+kspVersion = "2.0.0-1.0.21"
+daggerVersion = "2.51.1"
+coreKtxVersion = "1.5.0"
+junitKtx = "1.1.5"
+runner = "1.5.2"
+roboElectric = "4.12.2"
+jbcrypt = "0.4"
+legacySupportV4 = "1.0.0"
+fragmentKtx = "1.7.1"
+annotation = "1.8.0"
+activity = "1.8.0"
+preference = "1.2.1"
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
+androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
+
+androidx-room-runtime = { group="androidx.room", name="room-runtime", version.ref = "room_version" }
+androidx-room-compiler = {group="androidx.room", name="room-compiler", version.ref ="room_version"}
+androidx-room-ktx = {group="androidx.room", name="room-ktx", version.ref ="room_version"}
+androidx-dagger = {group = "com.google.dagger", name="dagger", version.ref = "daggerVersion"}
+core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "coreKtxVersion" }
+androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
+androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
+org-roboelectric = { group = "org.roboelectric", name="roboelectric", version.ref = "roboElectric" }
+org-mindrot-jbcrypt = { group="org.mindrot", name="jbcrypt", version.ref="jbcrypt" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "roboElectric" }
+androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
+androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+google-devtools-ksp = { id="com.google.devtools.ksp", version.ref="kspVersion" }
+
+
