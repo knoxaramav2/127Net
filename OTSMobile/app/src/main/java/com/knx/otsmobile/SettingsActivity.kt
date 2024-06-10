@@ -13,6 +13,7 @@ import androidx.preference.SwitchPreference
 import androidx.preference.SwitchPreferenceCompat
 import com.knx.otscommon.auth.AuthManager
 import com.knx.otscommon.data.DbCtx
+import com.knx.otscommon.data.DeviceInfo
 import com.knx.otscommon.data.LocalData
 import com.knx.otscommon.data.OTSDao
 import com.knx.otscommon.data.UserAccount
@@ -27,6 +28,7 @@ class SettingsActivity : AppCompatActivity() {
     lateinit var user: UserAccount
     lateinit var auth: AuthManager
     lateinit var changes: SettingsChanges
+    lateinit var device: DeviceInfo
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +38,7 @@ class SettingsActivity : AppCompatActivity() {
         auth = AuthManager.getInstance()
         user = auth.getCurrentUser()!!
         settings = dao.getUserSettings(user.id)!!
-
+        device = DeviceInfo.getInstance()
         changes = SettingsChanges(user.username, settings.keepSignedIn)
 
         if (savedInstanceState == null) {
@@ -47,10 +49,15 @@ class SettingsActivity : AppCompatActivity() {
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+
+
         PreferenceManager.getDefaultSharedPreferences(this)
             .edit()
             .putString("displayName", user.displayName)
             .putBoolean("persistSignIn", settings.keepSignedIn)
+            .putString("networkIpv4", device.ipv4)
+            .putString("networkIpv6", device.ipv6)
+            .putString("macAddress", device.macAddress)
             .apply()
     }
 

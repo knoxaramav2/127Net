@@ -11,6 +11,27 @@
             app:title="@string/persist_login"
             />
     </PreferenceCategory>
+    <PreferenceCategory app:title="Network">
+        <EditTextPreference
+            app:key="networkIpv4"
+            app:title="IPV4"
+            app:selectable="false"
+            app:useSimpleSummaryProvider="true"
+            />
+        <EditTextPreference
+            app:key="networkIpv6"
+            app:title="IPV6"
+            app:selectable="false"
+            app:useSimpleSummaryProvider="true"
+            />
+        <EditTextPreference
+            app:key="macAddress"
+            app:title="MAC"
+            app:selectable="false"
+            app:useSimpleSummaryProvider="true"
+            />
+
+    </PreferenceCategory>
 
 <!--    <PreferenceCategory app:title="@string/messages_header">-->
 

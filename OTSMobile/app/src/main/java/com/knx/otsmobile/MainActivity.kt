@@ -16,6 +16,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import com.knx.otscommon.auth.AuthManager
 import com.knx.otscommon.data.DbCtx
+import com.knx.otscommon.data.DeviceInfo
 import com.knx.otscommon.data.LocalData
 import com.knx.otscommon.util.OTSLog
 import com.knx.otsmobile.databinding.ActivityMainBinding
@@ -92,6 +93,7 @@ class MainActivity : AppCompatActivity() {
     private fun handleStartupPreRun(){
         authManager = AuthManager.init(this)
         localData = LocalData.init(this)
+        val device = DeviceInfo.getInstance()
         OTSLog.logInfo("OTS Pre run")
         handleStartupAuthentication()
     }
