@@ -49,4 +49,5 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     //annotationProcessor(libs.androidx.room.compiler)
 
+    testImplementation(libs.robolectric)
 }
