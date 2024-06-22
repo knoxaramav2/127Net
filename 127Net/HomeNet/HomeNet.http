@@ -1,6 +1,0 @@
-@HomeNet_HostAddress = http://localhost:5158
-
-GET {{HomeNet_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
