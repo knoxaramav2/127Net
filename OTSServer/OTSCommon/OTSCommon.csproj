@@ -16,4 +16,8 @@
     <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\OTSSDK\OTSSDK.csproj" />
+  </ItemGroup>
+
 </Project>

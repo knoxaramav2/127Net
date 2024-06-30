@@ -11,11 +11,10 @@ namespace OTSTests
     public class UserTests
     {
         private SingleSetup _setup;
-        private OTSDbCtx _ctx;
         private OTSService _dbService;
 
-        private string _ownerUser = "DevUser";
-        private string _adminUser = "AdminUser";
+        private readonly string _ownerUser = "DevUser";
+        private readonly string _adminUser = "AdminUser";
 
         [TearDown]
         public void Cleanup()
@@ -29,12 +28,7 @@ namespace OTSTests
             _setup = SingleSetup.GetInstance()
                 .EnsureUserAccount(_ownerUser, "AbC123!")
                 .EnsureUserAccount(_adminUser, "1337");
-            _ctx = _setup.OTSDbCtx;
             _dbService = _setup.OTSService;
-
-            var ownerAccount = _dbService.GetRoleAuthority("Owner");
-            Assert.That(ownerAccount, Is.Not.Null);
-            _dbService.AddUser("DevUser", "AbC123!", ownerAccount, ownerAccount);
         }
 
         [Test]

@@ -45,8 +45,8 @@ namespace OTSCommon.Models
         //Settings data
         public bool AutoSignIn { get; set; }
 
-        //User account navigation
-        public UserAccount UserAccount { get; set; } = null!;
+        public int EditorSettingsId { get; set; }
+        public OTSSchematicEditorSettings? EditorSettings { get; set; }
 
         public DateTime? DeletedOn { get; set; }
 
@@ -56,7 +56,6 @@ namespace OTSCommon.Models
             {
                 Id= 0,
                 AutoSignIn = true,
-                UserAccount = null!,
             };
         }
     }

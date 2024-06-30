@@ -10,7 +10,6 @@ namespace OTSTests
     public class DeviceTests
     {
         private SingleSetup _setup;
-        private OTSDbCtx _ctx;
         private OTSService _dbService;
 
         private readonly string _user1 = "User1";
@@ -19,7 +18,7 @@ namespace OTSTests
         private string _deviceId;
 
         static int nameId = 1;
-        private DeviceInfo CreateDeviceInfo()
+        private static DeviceInfo CreateDeviceInfo()
         {
             var deviceMock = new Mock<DeviceInfo>();
             deviceMock.Setup(x => x.OsVersion).Returns("TestOs");
@@ -44,7 +43,6 @@ namespace OTSTests
                 .EnsureUserAccount(_user3, "ZED")
                 .EnsureDevice(_user1, realDevice);
 
-            _ctx = _setup.OTSDbCtx;
             _dbService = _setup.OTSService;
 
             var devices = _dbService.GetDevices();

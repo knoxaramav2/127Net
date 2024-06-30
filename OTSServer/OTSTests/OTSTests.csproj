@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OTSCommon\OTSCommon.csproj" />
+    <ProjectReference Include="..\OTSRunner\OTSRunner.csproj" />
   </ItemGroup>
 
   <ItemGroup>

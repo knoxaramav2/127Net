@@ -24,9 +24,10 @@ namespace OTSCommon.Database
         public virtual DbSet<DeviceConnection> DeviceConnections { get; set; }
         public virtual DbSet<PeerContract> PeerContracts { get; set; }
         public virtual DbSet<TransientCertificate> TransientCertificates { get; set; }
-        public virtual DbSet<OTSComponent> OTSComponents { get; set; }
-        public virtual DbSet<OTSApplication> OTSApplication { get; set; }
-        public virtual DbSet<OTSAppDependencies> OTSAppDependencies { get; set; }
+        public virtual DbSet<AppInfo> OTSApplication { get; set; }
+        public virtual DbSet<OTSSchematic> OTSSchematics { get; set; }
+        public virtual DbSet<OTSSchematicEditorSettings> OTSSchematicEditorSettings { get; set; }
+        public virtual DbSet<OTSSchematicTheme> OTSSchematicThemes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -50,9 +51,10 @@ namespace OTSCommon.Database
             builder.Entity<UserSettings>( e =>
             {
                 e.HasKey(x => x.Id);
-                e.HasOne(x => x.UserAccount)
+                e.HasOne(x => x.EditorSettings)
                     .WithOne(x => x.UserSettings)
                     .HasForeignKey<UserSettings>(x => x.Id)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
             });
 
@@ -141,20 +143,30 @@ namespace OTSCommon.Database
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            builder.Entity<OTSComponent>(e =>
+            builder.Entity<AppInfo>(e =>
             {
-                e.HasKey(x => x.Id);    
+                e.HasKey(x => x.Id); 
             });
 
-            builder.Entity<OTSApplication>(e =>
+            builder.Entity<OTSSchematic>( e=>
             {
-                e.HasKey(x => x.Id);    
+                e.HasKey(x => x.Id);  
             });
 
-            builder.Entity<OTSAppDependencies>(e =>
+            builder.Entity<OTSSchematicEditorSettings>( e=>
             {
-                e.HasKey(x => x.Id);    
+                e.HasKey(x => x.Id);  
+                e.HasOne(x => x.UserSettings)
+                    .WithOne(x => x.EditorSettings)
+                    .HasForeignKey<OTSSchematicEditorSettings>(x => x.Id)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
+
+            builder.Entity<OTSSchematicTheme>( e=>
+            {
+                e.HasKey(x => x.Id);  
+            });
+
 
             base.OnModelCreating(builder);
         }
@@ -208,7 +220,6 @@ namespace OTSCommon.Database
             {
                 Id = user.Id,
                 AutoSignIn = true,
-                UserAccount = user,
             };
 
             user.UserSettings = settings;
@@ -237,7 +248,6 @@ namespace OTSCommon.Database
             {
                 Id = userId,
                 AutoSignIn = true,
-                UserAccount = user
             };
 
             DbCtx.UserSettings.Add(settings);
@@ -534,8 +544,6 @@ namespace OTSCommon.Database
         {
             var referer = GetDevice(refererDeviceId);
             var client = GetDevice(clientDeviceId);
-
-            var contracts = DbCtx.PeerContracts.ToList();
 
             var clientContract = GetPeerContractByDevice(clientDeviceId);
             var refererContract = GetPeerContractByDevice(refererDeviceId);

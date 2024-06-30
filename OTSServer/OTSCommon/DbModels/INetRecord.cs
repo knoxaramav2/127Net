@@ -9,6 +9,6 @@ namespace OTSCommon.Models
     internal interface INetRecord
     {
         public int Id { get; set; }
-        DateTime? DeletedOn { get; set; }
+        public DateTime? DeletedOn { get; set; }
     }
 }
