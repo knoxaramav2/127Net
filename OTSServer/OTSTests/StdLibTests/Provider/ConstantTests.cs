@@ -14,7 +14,6 @@ namespace OTSTests.StdLibTests.Provider
     internal class ConstantTests
     {
         private SingleSetup _setup;
-        private PluginManager _pluginManager;
         private SingleSetupPlugins _setupPlugins;
 
         [TearDown]
@@ -23,7 +22,6 @@ namespace OTSTests.StdLibTests.Provider
         [SetUp]
         public void Setup()
         {
-            _pluginManager = new();
             _setup = SingleSetup.GetInstance()
                 .EnsurePlugins()
                 .EnsureLibrary(StdLibUtils.ProvidersLibName)

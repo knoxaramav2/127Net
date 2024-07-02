@@ -27,7 +27,27 @@ namespace OTSCommon.Plugins
                 Path.Join(AppDomain.CurrentDomain.BaseDirectory, "plugins") :
                 pluginDirectory;
             Directory.CreateDirectory(PluginDirectory);
+            Console.WriteLine($"Scanning: {PluginDirectory}");
+            PrintDirPaths(AppDomain.CurrentDomain.BaseDirectory, 0);
             DiscoverPlugins();
+        }
+
+        private void PrintDirPaths(string path, int depth)
+        {
+            var directoryies = Directory.GetDirectories(path);
+            var files = Directory.GetFiles(path);
+            var spacing = new string('\t', depth);
+
+            foreach (var file in files)
+            {
+                Console.WriteLine($"{spacing}|_ ${ Path.GetFileName(file)}");
+            }
+
+            foreach (var dir in directoryies)
+            {
+                Console.WriteLine($"{spacing}|_ #{Path.GetFileName(dir)}");
+                PrintDirPaths(dir, depth+1);
+            }
         }
 
         public IEnumerable<IOTSLibrary> Libraries => GetHighestLibInstances();

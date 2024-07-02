@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using OTSRunner;
 using OTSSDK;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OTSTests.StdLibTests.Monitor
 {
@@ -9,14 +10,20 @@ namespace OTSTests.StdLibTests.Monitor
         private SingleSetup _setup;
         private SingleSetupPlugins _setupPlugins;
         private OTSObjectManager _manager;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private IOTSComponent _monitor;
         private IOTSComponent _boolProvider;
         private IOTSComponent _signedProvider;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 
         [TearDown]
         public void Cleanup() { _setup.Dispose(); }
 
         [SetUp]
+        [MemberNotNull(nameof(_monitor))]
+        [MemberNotNull(nameof(_boolProvider))]
+        [MemberNotNull(nameof(_signedProvider))]
         public void Setup()
         {
             _manager = new OTSObjectManager();

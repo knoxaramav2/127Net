@@ -515,18 +515,11 @@ namespace OTSSDK
                 _ => new object()
             };
     
-        private static T? GetDef<T>(object? value)
-        {
-            if (value is List<object> list) { return (T)(object)TryCastArray(value); }
-            else if (value is Dictionary<string, object> dictionary) { return (T)(object)TryCastMap(value); }
-            return default;
-        }
-
         public static T? TemplateConversion<T>(object? value)
         {
-            if(value is T)
+            if(value is T t)
             {
-                return (T) value;
+                return t;
             }
 
             var retVal = 
