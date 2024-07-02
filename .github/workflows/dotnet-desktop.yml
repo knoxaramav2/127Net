@@ -37,8 +37,7 @@ jobs:
       run: dotnet restore
 
     - name: Build Libraries
-      working-directory: ./OTSServer
-      run: dotnet build Libraries/**/*.csproj --no-restore --configuration Release
+      run: dotnet build /**/*.csproj --no-restore --configuration Release
 
     - name: Build
       run: dotnet build --no-restore --configuration Release
