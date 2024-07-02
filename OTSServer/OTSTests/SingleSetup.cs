@@ -32,7 +32,7 @@ namespace OTSTests
         {
             libraryAlias ??= libraryName;
 
-            libraryAlias = libraryAlias.Normalize();
+            libraryAlias = libraryAlias.ToUpper();
             if(LibraryMacros.ContainsKey(libraryAlias)) 
                 { throw new OTSSetupException($"Cannot register duplicate library {libraryName} with alias {libraryAlias}."); }
 
@@ -45,23 +45,25 @@ namespace OTSTests
         public SingleSetupPlugins EnsureComponent(string libraryAlias, string componentName, string? componentAlias = null)
         {
             componentAlias ??= componentName;
-            libraryAlias = libraryAlias.Normalize();
-            componentAlias = componentAlias.Normalize();
-            if(GetComponent(componentAlias, out _)) 
+            libraryAlias = libraryAlias.ToUpper();
+            componentAlias = componentAlias.ToUpper();
+            
+            if(ComponentMacros.ContainsKey(componentAlias))
                 { throw new OTSSetupException($"Cannot register duplicate component {componentName} with alias {componentAlias}."); }
             GetLibrary(libraryAlias, out var library);
 
-            ComponentMacros[componentAlias] = () => library?.GetComponent(componentAlias);
+            ComponentMacros[componentAlias] = () => library?.GetComponent(componentName) 
+                ?? throw new OTSSetupException($"Unabled to create factory for {componentAlias} ({componentName}).");
             
             return this;
         }
 
         public SingleSetup EndPlugins => Setup;
 
-        public bool GetLibrary(string alias, out IOTSLibrary? library) => LibraryMacros.TryGetValue(alias.Normalize(), out library);
+        public bool GetLibrary(string alias, out IOTSLibrary? library) => LibraryMacros.TryGetValue(alias.ToUpper(), out library);
         public bool GetComponent(string alias, out IOTSComponent? component)
         {
-            ComponentMacros.TryGetValue(alias.Normalize(), out var componentFunc);
+            ComponentMacros.TryGetValue(alias.ToUpper(), out var componentFunc);
             component = componentFunc?.Invoke();
 
             return component != null;

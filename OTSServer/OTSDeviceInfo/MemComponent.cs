@@ -62,7 +62,7 @@ namespace OTSDeviceInfo
     }
     #endif
 
-    public class MemComponentTemplate(Guid libGuid) : OTSComponentTemplate<IOTSComponent>("MemoryMonitor", libGuid, false)
+    public class MemComponentTemplate(Guid libGuid) : OTSComponentTemplate<IOTSComponent>(StdLibUtils.MemoryMonitor, libGuid, false)
     {
         public override MemComponent CreateInstance() => new (Name, LibraryGuid);
         
@@ -75,24 +75,18 @@ namespace OTSDeviceInfo
         public MemComponent(string name, Guid libGuid) : base(name, libGuid)
         {
             Outputs = [
-                new ProcessMemAllocated(ID, _proc),
-                new SystemMemoryAvailable(ID),
-                new SystemMemoryTotal(ID)
+                new OTSOutput(StdLibUtils.ProcessMemory, ID, OTSTypes.SIGNED),
+                new OTSOutput(StdLibUtils.SystemMemoryAvailable, ID, OTSTypes.UNSIGNED),
+                new OTSOutput(StdLibUtils.SystemMemoryTotal, ID, OTSTypes.UNSIGNED),
                 ];  
         }
-    }
 
-    public class ProcessMemAllocated(Guid componentId, Process proc) : OTSOutput("ProcessMemory", componentId, OTSTypes.SIGNED)
-    {
-        public override IOTSData? Get()
+        public override void Update()
         {
-            return new OTSData(OTSTypes.SIGNED, proc.PrivateMemorySize64);
+            Outputs.ElementAt(0).Value = new OTSData(OTSTypes.SIGNED, GetProcessMemory());
+            Outputs.ElementAt(1).Value = new OTSData(OTSTypes.UNSIGNED, GetAvailableSystemMemory());
+            Outputs.ElementAt(2).Value = new OTSData(OTSTypes.UNSIGNED, GetTotalSystemMemory());
         }
-    }
-
-    public class SystemMemoryAvailable(Guid componentId) : OTSOutput("SystemMemoryAvailable", componentId, OTSTypes.UNSIGNED)
-    {
-        public override IOTSData? Get() => new OTSData(OTSTypes.UNSIGNED, GetAvailableSystemMemory());
 
         private static ulong GetAvailableSystemMemory()
         {
@@ -104,12 +98,6 @@ namespace OTSDeviceInfo
             
             return 0;
         }
-    }
-
-    public class SystemMemoryTotal(Guid componentId) : OTSOutput("SystemMemoryTotal", componentId, OTSTypes.UNSIGNED)
-    {
-
-        public override IOTSData? Get() => new OTSData(OTSTypes.UNSIGNED, GetTotalSystemMemory());
 
         private static ulong GetTotalSystemMemory()
         {
@@ -121,5 +109,8 @@ namespace OTSDeviceInfo
             
             return 0;
         }
+
+        private long GetProcessMemory() => _proc.PrivateMemorySize64;
+       
     }
 }

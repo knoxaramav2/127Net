@@ -13,10 +13,10 @@ namespace OTSTests.StdLibTests.Math
         private SingleSetup _setup;
         private PluginManager _pluginManager;
         private IOTSLibrary _arithLib;
-        private IOTSConfigField _configField;
         private IOTSInput _input1;
         private IOTSInput _input2;
         private IOTSOutput _output;
+        private IOTSComponent _component;
 
         [TearDown]
         public void Cleanup() { _setup.Dispose(); }
@@ -28,12 +28,11 @@ namespace OTSTests.StdLibTests.Math
             _pluginManager = new();
             try
             {
-                _arithLib = _pluginManager.GetLibrary("OTSMath")!;
-                var component = _arithLib.GetComponent("Subtraction");
-                _configField = component!.GetConfig("SignToggleConfig")!;
-                _input1 = component!.GetInput("Input 1")!;
-                _input2 = component!.GetInput("Input 2")!;
-                _output = component!.GetOutput("Result")!;
+                _arithLib = _pluginManager.GetLibrary(StdLibUtils.MathLibName)!;
+                _component = _arithLib.GetComponent(StdLibUtils.MathSubtraction)!;
+                _input1 = _component!.GetInput("Input 1")!;
+                _input2 = _component!.GetInput("Input 2")!;
+                _output = _component!.GetOutput("Result")!;
             }
             catch (Exception) { Assert.Fail(); }
         }
@@ -49,11 +48,10 @@ namespace OTSTests.StdLibTests.Math
         */
         public void SubSSS()
         {
-            _configField.Set(new OTSData(OTSTypes.BOOL, true));
             _input1.Set(new OTSData(OTSTypes.SIGNED, 5));
             _input2.Set(new OTSData(OTSTypes.SIGNED, 10));
-
-            var result = _output.Get()!;
+            _component.Update();
+            var result = _output.Value!;
             Assert.That(result.As<long>(), Is.EqualTo(-5));
         }
 
@@ -64,11 +62,10 @@ namespace OTSTests.StdLibTests.Math
         */
         public void SubUSS()
         {
-            _configField.Set(new OTSData(OTSTypes.BOOL, true));
             _input1.Set(new OTSData(OTSTypes.SIGNED, -5));
             _input2.Set(new OTSData(OTSTypes.UNSIGNED, 10));
-
-            var result = _output.Get()!;
+            _component.Update();
+            var result = _output.Value!;
             Assert.That(result.As<long>(), Is.EqualTo(-15));
         }
 
@@ -79,27 +76,25 @@ namespace OTSTests.StdLibTests.Math
         */
         public void SubSUS()
         {
-            _configField.Set(new OTSData(OTSTypes.BOOL, true));
             _input1.Set(new OTSData(OTSTypes.UNSIGNED, 5));
             _input2.Set(new OTSData(OTSTypes.SIGNED, -10));
-
-            var result = _output.Get()!;
+            _component.Update();
+            var result = _output.Value!;
             Assert.That(result.As<long>(), Is.EqualTo(15));
         }
 
         [Test]
         /*
         * VAL1 VAL2 SIGN EXPECTED
-        *   5   -10  +      0
+        *   5   10  +     -5
         */
         public void SubSSU()
         {
-            _configField.Set(new OTSData(OTSTypes.BOOL, false));
             _input1.Set(new OTSData(OTSTypes.UNSIGNED, 5));
-            _input2.Set(new OTSData(OTSTypes.SIGNED, 15));
-
-            var result = _output.Get()!;
-            Assert.That(result.As<long>(), Is.EqualTo(0));
+            _input2.Set(new OTSData(OTSTypes.SIGNED, 10));
+            _component.Update();
+            var result = _output.Value!;
+            Assert.That(result.As<long>(), Is.EqualTo(-5));
         }
 
         [Test]
@@ -109,11 +104,10 @@ namespace OTSTests.StdLibTests.Math
         */
         public void SubSS()
         {
-            _configField.Set(new OTSData(OTSTypes.BOOL, true));
             _input1.Set(new OTSData(OTSTypes.SIGNED, -5));
             _input2.Set(new OTSData(OTSTypes.SIGNED, -10));
-
-            var result = _output.Get()!;
+            _component.Update();
+            var result = _output.Value!;
             Assert.That(result.As<long>(), Is.EqualTo(5));
         }
 
@@ -124,11 +118,10 @@ namespace OTSTests.StdLibTests.Math
         */
         public void SubSSSOF()
         {
-            _configField.Set(new OTSData(OTSTypes.BOOL, false));
             _input1.Set(new OTSData(OTSTypes.UNSIGNED, ulong.MinValue));
             _input2.Set(new OTSData(OTSTypes.UNSIGNED, 1));
-
-            var result = _output.Get()!;
+            _component.Update();
+            var result = _output.Value!;
             Assert.That(result.As<ulong>(), Is.EqualTo(0));
         }
     }

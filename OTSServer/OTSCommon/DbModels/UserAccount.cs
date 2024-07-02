@@ -17,7 +17,7 @@ namespace OTSCommon.Models
         public int Id { get; set; }
 
         public required string Username { get; set; }
-        public required string NormalizedUsername { get; set; }
+        public required string ToUpperdUsername { get; set; }
         public required string PassHash { get; set; }
         public required string PassSalt { get; set; }
 

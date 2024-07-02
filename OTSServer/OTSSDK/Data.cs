@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace OTSSDK
 {
     //TODO Provide concrete type getters/setters
-    public interface IOTSData
+    public interface IOTSData: ICloneable
     {
         OTSTypes OTSType { get; }
         T? As<T>();
@@ -34,6 +34,7 @@ namespace OTSSDK
             OTSTypes.MAP => TypeConversion.TryCastMap(value!),
             _ => throw new OTSException($"Invalid OTS Data type {type}")
         };
+
         public OTSTypes OTSType { get; } = type;
 
         public readonly T? As<T>()
@@ -49,8 +50,18 @@ namespace OTSSDK
 
         public readonly Tuple<OTSTypes, object> TypeValuePair => new(OTSType, _value);
 
+        public readonly object Clone()
+        {
+            return new
+            {
+                OTSType,
+                value
+            };
+        }
+
         #region Operator Overloading
 
+        // Equality
         public static bool operator ==(OTSData lVal, OTSData rVal) => lVal.OTSType switch
         {
             OTSTypes.UNSIGNED => lVal.As<ulong>() == rVal.As<ulong>(),
@@ -125,6 +136,166 @@ namespace OTSSDK
             _ => false
         };
 
+        public static bool operator ^(OTSData lVal, OTSData rVal) => lVal.OTSType switch
+        {
+
+            OTSTypes.UNSIGNED or
+            OTSTypes.SIGNED or
+            OTSTypes.BOOL or
+            OTSTypes.DECIMAL => lVal.As<bool>() ^ rVal.As<bool>(),
+            OTSTypes.STRING => 
+                !lVal.As<string>()?.Any(x => rVal.As<string>()?.Contains(x) ?? true) ?? true,
+            OTSTypes.LIST => 
+                !lVal.As<List<object>>()?.Any(x => rVal.As<List<object>>()?.Contains(x) ?? true) ?? true,
+            OTSTypes.MAP => 
+                !lVal.As<Dictionary<string, object>>()?.Any(x => rVal.As<Dictionary<string, object>>()?.ContainsKey(x.Key) ?? true) ?? true,
+            _ => false
+        };
+
+        // Math
+        public static OTSData operator +(OTSData lVal, OTSData rVal) => AutoTypeOpts.EnsureAdd(lVal, rVal);
+
+        public static OTSData operator -(OTSData lVal, OTSData rVal) => AutoTypeOpts.EnsureSub(lVal, rVal);
+
+        public static OTSData operator *(OTSData lVal, OTSData rVal) => 
+            new( lVal.OTSType,
+            lVal.OTSType switch
+        {
+            OTSTypes.UNSIGNED => lVal.As<ulong>() * rVal.As<ulong>(),
+            OTSTypes.SIGNED => lVal.As<long>() * rVal.As<long>(),
+            OTSTypes.BOOL => lVal.As<long>() * rVal.As<long>(),
+            OTSTypes.STRING => new OTSData(OTSTypes.STRING, ""),
+            OTSTypes.DECIMAL => lVal.As<double>() * rVal.As<double>(),
+            OTSTypes.LIST => new OTSData(OTSTypes.LIST, new List<object>()),
+            OTSTypes.MAP => new OTSData(OTSTypes.MAP, new Dictionary<string, object>()),
+            _ => false
+        });
+
+        public static OTSData operator /(OTSData lVal, OTSData rVal) => 
+            new( lVal.OTSType,
+            lVal.OTSType switch
+        {
+            OTSTypes.UNSIGNED => lVal.As<ulong>() / rVal.As<ulong>(),
+            OTSTypes.SIGNED => lVal.As<long>() / rVal.As<long>(),
+            OTSTypes.BOOL => lVal.As<long>() / rVal.As<long>(),
+            OTSTypes.STRING => new OTSData(OTSTypes.STRING, ""),
+            OTSTypes.DECIMAL => lVal.As<double>() * rVal.As<double>(),
+            OTSTypes.LIST => new OTSData(OTSTypes.LIST, new List<object>()),
+            OTSTypes.MAP => new OTSData(OTSTypes.MAP, new Dictionary<string, object>()),
+            _ => false
+        });
+
+        //&& and ||
+        public static bool operator true(OTSData value) => value.OTSType switch
+        {
+
+            OTSTypes.UNSIGNED or
+            OTSTypes.SIGNED or
+            OTSTypes.BOOL or
+            OTSTypes.DECIMAL => value.As<bool>(),
+            OTSTypes.STRING => value.As<string>() != string.Empty,
+            OTSTypes.LIST => value.As<List<object>>()?.Count > 0,
+            OTSTypes.MAP => value.As<Dictionary<string, object>>()?.Count > 0,
+            _ => false
+        };
+
+        public static bool operator false(OTSData value) => value.OTSType switch
+        {
+
+            OTSTypes.UNSIGNED or
+            OTSTypes.SIGNED or
+            OTSTypes.BOOL or
+            OTSTypes.DECIMAL => !value.As<bool>(),
+            OTSTypes.STRING => value.As<string>() == string.Empty,
+            OTSTypes.LIST => value.As<List<object>>()?.Count == 0,
+            OTSTypes.MAP => value.As<Dictionary<string, object>>()?.Count == 0,
+            _ => false
+        };
+
+        public static OTSData operator &(OTSData lVal, OTSData rVal)
+        {
+            if(lVal.OTSType == OTSTypes.UNSIGNED)
+                { return new OTSData(OTSTypes.UNSIGNED, lVal.As<ulong>() & rVal.As<ulong>()); }
+            if(lVal.OTSType == OTSTypes.SIGNED)
+                { return new OTSData(OTSTypes.SIGNED, lVal.As<long>() & rVal.As<long>()); }
+            if(lVal.OTSType == OTSTypes.BOOL)
+                { return new OTSData(OTSTypes.BOOL, lVal.As<bool>() & rVal.As<bool>()); }
+            if(lVal.OTSType == OTSTypes.MAP)
+            {
+                var lMap = lVal.As<Dictionary<string, object>>();
+                var rMap = rVal.As<Dictionary<string, object>>(); 
+                var newMap = new Dictionary<string, object>();
+
+                if(lMap == null || rMap == null) { return new OTSData(OTSTypes.MAP, newMap); }
+
+                foreach(var key in lMap.Keys)
+                {
+                    if (rMap.TryGetValue(key, out object? value))
+                    {
+                        newMap[key] = value;
+                    }
+                }
+
+                return new OTSData(OTSTypes.MAP, newMap);
+            }
+            if(lVal.OTSType == OTSTypes.LIST)
+            {
+                var lList = lVal.As<List<object>>();
+                var rList = rVal.As<List<object>>(); 
+                var newList = new List<object>();
+
+                if(lList == null || rList == null) { return new OTSData(OTSTypes.LIST, newList); }
+
+                newList = lList.Where(x => rList.Contains(x)).ToList();
+
+                return new OTSData(OTSTypes.LIST, newList);
+            }
+
+            
+            return new OTSData(OTSTypes.NONE, null);
+        }
+
+        public static OTSData operator |(OTSData lVal, OTSData rVal)
+        {
+            if(lVal.OTSType == OTSTypes.UNSIGNED)
+                { return new OTSData(OTSTypes.UNSIGNED, lVal.As<ulong>() | rVal.As<ulong>()); }
+            if(lVal.OTSType == OTSTypes.SIGNED)
+                { return new OTSData(OTSTypes.SIGNED, lVal.As<long>() | rVal.As<long>()); }
+            if(lVal.OTSType == OTSTypes.BOOL)
+                { return new OTSData(OTSTypes.BOOL, lVal.As<bool>() | rVal.As<bool>()); }
+            if(lVal.OTSType == OTSTypes.MAP)
+            {
+                var lMap = lVal.As<Dictionary<string, object>>();
+                var rMap = rVal.As<Dictionary<string, object>>(); 
+                var newMap = new Dictionary<string, object>();
+
+                if(lMap == null || rMap == null) { return new OTSData(OTSTypes.MAP, newMap); }
+
+                foreach(var key in rMap.Keys)
+                {
+                    newMap[key] = rMap[key];
+                }
+
+                return new OTSData(OTSTypes.MAP, newMap);
+            }
+            if(lVal.OTSType == OTSTypes.LIST)
+            {
+                var lList = lVal.As<List<object>>();
+                var rList = rVal.As<List<object>>(); 
+                var newList = lList;
+
+                if(lList == null || rList == null) { return new OTSData(OTSTypes.LIST, lList); }
+
+                newList!.AddRange(rList);
+                newList = newList.Distinct().ToList();
+
+                return new OTSData(OTSTypes.LIST, newList);
+            }
+
+            
+            return new OTSData(OTSTypes.NONE, null);
+        }
+
         public override readonly bool Equals(object? obj)
         {
             if(obj is OTSData rData) { return this == rData; }
@@ -140,6 +311,7 @@ namespace OTSSDK
         #endregion
     }
 
+    //TODO Refactor into more specific utility classes
     public static class TypeConversion
     {
         public static bool CastIfSignedNumeric(object? value, out long res)
@@ -345,13 +517,18 @@ namespace OTSSDK
     
         private static T? GetDef<T>(object? value)
         {
-            if (value is List<object> list) { return (T)(object) list; }
-            else if (value is Dictionary<string, object> dictionary) { return (T)(object) dictionary; }
+            if (value is List<object> list) { return (T)(object)TryCastArray(value); }
+            else if (value is Dictionary<string, object> dictionary) { return (T)(object)TryCastMap(value); }
             return default;
         }
 
         public static T? TemplateConversion<T>(object? value)
         {
+            if(value is T)
+            {
+                return (T) value;
+            }
+
             var retVal = 
                 Type.GetTypeCode(typeof(T)) switch
                 {
@@ -362,12 +539,12 @@ namespace OTSSDK
                     TypeCode.Boolean => (T)(object)TryCastBool(value),
                     TypeCode.Decimal or TypeCode.Double => (T)(object)TryCastDouble(value),
                     TypeCode.String => (T)(object)TryCastString(value),
-                    _ => GetDef<T>(value)
+                    _ => GetOTSTypeDefault(TypeFromGeneric<T>())
                 };
 
             //TODO Check list, dict
 
-            return retVal;
+            return (T)retVal;
         }
 
         
@@ -384,6 +561,199 @@ namespace OTSSDK
                 OTSTypes.MAP => new Dictionary<string, object>(),
                 _ => new object(),
             };
+        }
+    
+        public static IOTSData EnsureValue(IOTSData? value, OTSTypes type)
+        {
+            if(value != null && value.OTSType == type) { return value; }
+            if(value != null) { return new OTSData(type, PolyConversion(value.TypeValuePair.Item2, type)); }
+            return new OTSData(type, GetOTSTypeDefault(type));
+        }
+   
+        public static OTSTypes TypeFromGeneric<T>()
+        {
+            OTSTypes ret = OTSTypes.NONE;
+            var typeT = typeof(T);
+
+            if(typeT == typeof(int) || 
+               typeT == typeof(long) || 
+               typeT == typeof(short))
+            {
+                ret = OTSTypes.SIGNED;
+            } else if(typeT == typeof(uint) || 
+               typeT == typeof(ulong) || 
+               typeT == typeof(ushort))
+            {
+                ret = OTSTypes.UNSIGNED;
+            } else if(typeT == typeof(float) || 
+               typeT == typeof(double))
+            {
+                ret = OTSTypes.DECIMAL;
+            } else if(typeT == typeof(bool))
+            {
+                ret = OTSTypes.BOOL;
+            } else if(typeT == typeof(string))
+            {
+                ret = OTSTypes.STRING;
+            }else if(typeT == typeof(Dictionary<string, object>))
+            {
+                ret = OTSTypes.MAP;
+            } else if(typeT == typeof(List<object>))
+            {
+                ret = OTSTypes.LIST;
+            }
+
+            return ret;
+        }
+
+    }
+
+    //TODO Overhaul typing system to be more steamlined
+    public static class AutoTypeOpts
+    {
+        public static OTSTypes NormalizeTypeAndPriorty (IOTSData? originalLVal, IOTSData? originalRVal, out IOTSData LValue, out IOTSData RValue)
+        {
+            var lvPriority = originalLVal?.OTSType ?? OTSTypes.NONE;
+            var rvPriority = originalRVal?.OTSType ?? OTSTypes.NONE;
+            var priorityType = (OTSTypes)Math.Max((int)lvPriority, (int)rvPriority);
+
+            originalLVal = TypeConversion.EnsureValue(originalLVal, (OTSTypes)priorityType);
+            originalRVal = TypeConversion.EnsureValue(originalRVal, (OTSTypes)priorityType);
+
+            if (lvPriority == rvPriority) { LValue = originalLVal; RValue = originalRVal; }
+            else if (lvPriority < priorityType)
+            {
+                LValue = new OTSData((OTSTypes)priorityType,
+                TypeConversion.PolyConversion(originalLVal.TypeValuePair.Item2, (OTSTypes)priorityType));
+                RValue = originalRVal;
+            }
+            else
+            {
+                RValue = new OTSData((OTSTypes)priorityType,
+                TypeConversion.PolyConversion(originalRVal.TypeValuePair.Item2, (OTSTypes)priorityType));
+                LValue = originalLVal;
+            }
+
+            return priorityType;
+        }
+    
+        public static OTSData EnsureAdd(IOTSData? lVal, IOTSData? rVal)
+        {
+            var pType = NormalizeTypeAndPriorty(lVal, rVal, out var eLVal, out var eRVal);
+            object? sum;
+
+            try
+            {
+                sum = pType switch
+            {
+                OTSTypes.NONE => TypeConversion.GetOTSTypeDefault(pType),
+                OTSTypes.BOOL => eLVal.As<bool>() && eRVal.As<bool>(),
+                OTSTypes.UNSIGNED => checked(eLVal.As<ulong>() + eRVal.As<ulong>()),
+                OTSTypes.SIGNED => checked(eLVal.As<long>() + eRVal.As<long>()),
+                OTSTypes.DECIMAL => checked(eLVal.As<double>() + eRVal.As<double>()),
+                OTSTypes.STRING => checked(eLVal.As<string>() + eRVal.As<string>()),
+                OTSTypes.LIST => ExtendLvRvList(eLVal.As<List<object>>(), eRVal.As<List<object>>()),
+                OTSTypes.MAP => ExtendLvRvMap(eLVal.As<Dictionary<string, object>>(), eRVal.As<Dictionary<string, object>>()),
+                _ => throw new OTSException($"Illegal type {pType}"),
+            };
+            }
+            catch (Exception)
+            {
+                sum = TypeConversion.GetOTSTypeDefault(pType);
+            }
+
+            return new OTSData(pType, sum);
+        }
+
+        public static string Substring(string valStr, string subStr)
+        {
+            var idx = valStr.IndexOf(subStr);
+            return idx < 0? valStr : valStr.Remove(idx, subStr.Length);
+        }
+        public static OTSData EnsureSub(IOTSData? lVal, IOTSData? rVal)
+        {
+            var pType = NormalizeTypeAndPriorty(lVal, rVal, out var eLVal, out var eRVal);
+            object? diff;
+
+            try
+            {
+                diff = pType switch
+                {
+                    OTSTypes.BOOL => checked(eLVal.As<bool>() && !eRVal.As<bool>()),
+                    OTSTypes.UNSIGNED => checked(eLVal.As<ulong>() - eRVal.As<ulong>()),
+                    OTSTypes.SIGNED => checked(eLVal.As<long>() - eRVal.As<long>()),
+                    OTSTypes.DECIMAL => checked(eLVal.As<double>() - eRVal.As<double>()),
+                    OTSTypes.STRING => Substring(eLVal.As<string>()!, eRVal.As<string>()!),
+                    OTSTypes.LIST => eLVal.As<List<object>>()!.Where(x => !eRVal.As<List<object>>()!.Any(y => x == y)).ToList(),
+                    OTSTypes.MAP => eLVal.As<Dictionary<string, object>>()!.Where(x => eRVal.As<Dictionary<string, object>>()!.ContainsKey(x.Key)).ToDictionary(),
+                    _ => TypeConversion.GetOTSTypeDefault(pType),
+                };
+            }
+            catch (Exception)
+            {
+                diff = TypeConversion.GetOTSTypeDefault(pType);
+            }
+
+            return new OTSData(pType, diff);
+        }
+
+        public static OTSData EnsureMultiply(IOTSData? lVal, IOTSData? rVal)
+        {
+            var pType = NormalizeTypeAndPriorty(lVal, rVal, out var eLVal, out var eRVal);
+            object? prod;
+
+            try
+            {
+                prod = pType switch
+                {
+                    OTSTypes.BOOL => eLVal.As<bool>() && eRVal.As<bool>(),
+                    OTSTypes.UNSIGNED => checked(eLVal.As<ulong>() * eRVal.As<ulong>()),
+                    OTSTypes.SIGNED => checked(eLVal.As<long>() * eRVal.As<long>()),
+                    OTSTypes.DECIMAL => checked(eLVal.As<double>() * eRVal.As<double>()),
+                    _ => TypeConversion.GetOTSTypeDefault(pType),
+                };
+            }
+            catch (Exception)
+            {
+                prod = TypeConversion.GetOTSTypeDefault(pType);
+            }
+
+            return new OTSData(pType, prod);
+        }
+    
+        public static OTSData EnsureDivide(IOTSData? lVal, IOTSData? rVal)
+        {
+            var pType = NormalizeTypeAndPriorty(lVal, rVal, out var eLVal, out var eRVal);
+            var quot = pType switch
+            {
+                OTSTypes.UNSIGNED => checked(eLVal.As<ulong>() / eRVal.As<ulong>()),
+                OTSTypes.SIGNED => checked(eLVal.As<long>() / eRVal.As<long>()),
+                OTSTypes.DECIMAL => checked(eLVal.As<double>() / eRVal.As<double>()),
+                _ => TypeConversion.GetOTSTypeDefault(pType),
+            };
+
+            return new OTSData(pType, quot);
+        }
+
+        private static List<object> ExtendLvRvList(List<object>? lVal, List<object>? rVal)
+        {
+            lVal ??= [];
+            rVal ??= [];
+            List<object> ret = [];
+            ret.AddRange(lVal);
+            ret.AddRange(rVal);
+            return ret;
+        }
+        private static Dictionary<string, object> ExtendLvRvMap(Dictionary<string, object>? lVal,Dictionary<string, object>? rVal)
+        {
+            lVal ??= [];
+            rVal ??= [];
+            Dictionary<string, object> ret = [];
+
+            foreach(var kv in lVal) { ret[kv.Key] = kv.Value; }
+            foreach(var kv in rVal) { if(!ret.ContainsKey(kv.Key)) ret[kv.Key] = kv.Value; }
+
+            return ret;
         }
     }
 }

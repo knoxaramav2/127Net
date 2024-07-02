@@ -1,20 +1,17 @@
-﻿using OTSCommon.Plugins;
+﻿using Microsoft.Extensions.Options;
+using OTSRunner;
 using OTSSDK;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OTSTests.StdLibTests.Monitor
 {
     internal class MonitorTests
     {
         private SingleSetup _setup;
-        private PluginManager _pluginManager;
-        private IOTSLibrary _providerLib;
-        private IOTSComponent _rawMonitor;
-        private IOTSComponent _objectStore;
+        private SingleSetupPlugins _setupPlugins;
+        private OTSObjectManager _manager;
+        private IOTSComponent _monitor;
+        private IOTSComponent _boolProvider;
+        private IOTSComponent _signedProvider;
 
         [TearDown]
         public void Cleanup() { _setup.Dispose(); }
@@ -22,39 +19,52 @@ namespace OTSTests.StdLibTests.Monitor
         [SetUp]
         public void Setup()
         {
-            _setup = SingleSetup.GetInstance();
-            _pluginManager = new();
-            try
-            {
-                _providerLib = _pluginManager.GetLibrary("OTSMonitor")!;
-                _rawMonitor = _providerLib.GetComponent("RawMonitor")!;
-            }
-            catch (Exception) { Assert.Fail(); }
+            _manager = new OTSObjectManager();
+            _setup = SingleSetup.GetInstance()
+                .EnsurePlugins()
+                .EnsureLibrary(StdLibUtils.ProvidersLibName)
+                .EnsureComponent(StdLibUtils.ProvidersLibName, StdLibUtils.ProvidersConstBool)
+                .EnsureComponent(StdLibUtils.ProvidersLibName, StdLibUtils.ProvidersConstSigned)
+
+                .EnsureLibrary(StdLibUtils.MonitorLibName)
+                .EnsureComponent(StdLibUtils.MonitorLibName, StdLibUtils.RawMonitor)
+                .EndPlugins;
+
+            _setup.PluginSetups!.GetComponent(StdLibUtils.RawMonitor, out _monitor!);
+            _setup.PluginSetups!.GetComponent(StdLibUtils.ProvidersConstBool, out _boolProvider!);
+            _setup.PluginSetups!.GetComponent(StdLibUtils.ProvidersConstSigned, out _signedProvider!);
+
+            _manager.AddComponent(_monitor);
+            _manager.AddComponent(_boolProvider);
+            _manager.AddComponent(_signedProvider);
+            _manager.LinkComponent(_boolProvider.GetOutput("Result")!, _monitor);
+            _manager.LinkComponent(_signedProvider.GetOutput("Result")!, _monitor);
+            _manager.BuildLinkOrder();
+
+            _setupPlugins = _setup.PluginSetups!;
         }
 
+        public bool SetAndReturnBoolMonitorValue(bool value)
+        {
+            _boolProvider.GetConfig("Value")!.Set(new OTSData(OTSTypes.BOOL, value));
+            _manager.PropgateSignals();
+            var resultConfig = _monitor.GetConfig("View 1")!;
+            var result = resultConfig.Get()!.As<bool>();
+            return result;
+        }
 
         [Test]
-        public void AddAndVerifyMonitorHookup()
+        public void BooMonitor1()
         {
-            var nameStrIn = "StrInput";
-            var nameLonIn = "LonInput";
+            var res = SetAndReturnBoolMonitorValue(true);
+            Assert.That(res, Is.True);
+        }
 
-            var monitor = _providerLib.GetComponent("RawMonitor");
-            var constSignedView = _providerLib.GetComponent("SignedProvider");
-
-            
-
-            var output = constSignedView?.GetOutput("Result");
-            //constSignedView.ConnectTo(output, monitor);
-
-            var strIn = _rawMonitor.GetInput(nameStrIn);
-            var lonIn = _rawMonitor.GetInput(nameLonIn);
-
-            Assert.Multiple(() =>
-            {
-                Assert.That(strIn, Is.Not.Null);
-                Assert.That(lonIn, Is.Not.Null);
-            });
+        [Test]
+        public void BooMonitor0()
+        {
+            var res = SetAndReturnBoolMonitorValue(false);
+            Assert.That(res, Is.False);
         }
     }
 }

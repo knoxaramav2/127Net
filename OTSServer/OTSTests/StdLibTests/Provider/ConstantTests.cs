@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using Org.BouncyCastle.Asn1.Ocsp;
 using OTSCommon.Plugins;
 using OTSSDK;
 using System;
@@ -14,14 +15,7 @@ namespace OTSTests.StdLibTests.Provider
     {
         private SingleSetup _setup;
         private PluginManager _pluginManager;
-        private IOTSLibrary _providerLib;
-        private IOTSComponent _signedProvider;
-        private IOTSComponent _unsignedProvider;
-        private IOTSComponent _decimalProvider;
-        private IOTSComponent _boolProvider;
-        private IOTSComponent _stringProvider;
-        private IOTSComponent _listProvider;
-        private IOTSComponent _mapProvider;
+        private SingleSetupPlugins _setupPlugins;
 
         [TearDown]
         public void Cleanup() { _setup.Dispose(); }
@@ -29,143 +23,91 @@ namespace OTSTests.StdLibTests.Provider
         [SetUp]
         public void Setup()
         {
-            _setup = SingleSetup.GetInstance();
             _pluginManager = new();
-            try
-            {
-                _providerLib = _pluginManager.GetLibrary("OTSProvider")!;
-                _signedProvider = _providerLib.GetComponent("SignedProvider")!;
-                _unsignedProvider = _providerLib.GetComponent("UnsignedProvider")!;
-                _decimalProvider = _providerLib.GetComponent("DecimalProvider")!;
-                _boolProvider = _providerLib.GetComponent("BoolProvider")!;
-                _stringProvider = _providerLib.GetComponent("StringProvider")!;
-                _listProvider = _providerLib.GetComponent("ListProvider")!;
-                _mapProvider = _providerLib.GetComponent("MapProvider")!;
-            }
-            catch (Exception) { Assert.Fail(); }
+            _setup = SingleSetup.GetInstance()
+                .EnsurePlugins()
+                .EnsureLibrary(StdLibUtils.ProvidersLibName)
+                .EnsureComponent(StdLibUtils.ProvidersLibName, StdLibUtils.ProvidersConstSigned)
+                .EnsureComponent(StdLibUtils.ProvidersLibName, StdLibUtils.ProvidersConstUnsigned)
+                .EnsureComponent(StdLibUtils.ProvidersLibName, StdLibUtils.ProvidersConstDecimal)
+                .EnsureComponent(StdLibUtils.ProvidersLibName, StdLibUtils.ProvidersConstBool)
+                .EnsureComponent(StdLibUtils.ProvidersLibName, StdLibUtils.ProvidersConstString)
+                .EnsureComponent(StdLibUtils.ProvidersLibName, StdLibUtils.ProvidersConstList)
+                .EnsureComponent(StdLibUtils.ProvidersLibName, StdLibUtils.ProvidersConstMap)
+                .EndPlugins;
+            _setupPlugins =  _setup.PluginSetups!;
+        }
+
+        private T? SetTestValue<T>(string componentName, T testVal)
+        {
+            var type = TypeConversion.TypeFromGeneric<T>();
+            _setupPlugins.GetComponent(componentName, out var cfg);
+            cfg!.GetConfig("Value")?.Set(new OTSData(type, testVal));
+            cfg.Update();
+            var res = cfg.GetOutput("Result")!.Value!.As<T>();
+
+            return res;
         }
 
         [Test]
         public void SignedConst()
         {
             const long testVal = -5284;
-            var cfg = _signedProvider.GetConfig("Value");
-            Assert.That(cfg, Is.Not.Null);
-            cfg.Set(new OTSData(OTSTypes.SIGNED, testVal));
-            Assert.That(cfg.Get()!.As<long>(), Is.EqualTo(testVal));
+            var res = SetTestValue<long>(StdLibUtils.ProvidersConstSigned, testVal);
+            Assert.That(res, Is.EqualTo(testVal));
         }
 
         [Test]
         public void UnsignedConst()
         {
             const ulong testVal = 20050;
-            var cfg = _unsignedProvider.GetConfig("Value");
-            Assert.That(cfg, Is.Not.Null);
-            cfg.Set(new OTSData(OTSTypes.UNSIGNED, testVal));
-            Assert.That(cfg.Get()!.As<long>(), Is.EqualTo(testVal));
+            var res = SetTestValue<ulong>(StdLibUtils.ProvidersConstUnsigned, testVal);
+            Assert.That(res, Is.EqualTo(testVal));
         }
 
         [Test]
         public void DoubleConst()
         {
             const double testVal = 200.54f;
-            var cfg = _decimalProvider.GetConfig("Value");
-            Assert.That(cfg, Is.Not.Null);
-            cfg.Set(new OTSData(OTSTypes.DECIMAL, testVal));
-            Assert.That(cfg.Get()!.As<double>(), Is.EqualTo(testVal));
+            var res = SetTestValue<double>(StdLibUtils.ProvidersConstDecimal, testVal);
+            Assert.That(res, Is.EqualTo(testVal));
         }
 
         [Test]
         public void BoolConst()
         {
             const bool testVal = true;
-            var cfg = _boolProvider.GetConfig("Value");
-            Assert.That(cfg, Is.Not.Null);
-            cfg.Set(new OTSData(OTSTypes.BOOL, testVal));
-            Assert.That(cfg.Get()!.As<bool>(), Is.EqualTo(testVal));
+            var res = SetTestValue<bool>(StdLibUtils.ProvidersConstBool, testVal);
+            Assert.That(res, Is.EqualTo(testVal));
         }
 
         [Test]
         public void StringConst()
         {
             const string testVal = "ThisIs A test String!";
-            var cfg = _stringProvider.GetConfig("Value");
-            Assert.That(cfg, Is.Not.Null);
-            cfg.Set(new OTSData(OTSTypes.STRING, testVal));
-            Assert.That(cfg.Get()!.As<string>(), Is.EqualTo(testVal));
-        }
-
-        [Test]
-        public void MapConst()
-        {
-            string boolKey = "BoolVal";
-            string stringKey = "StringVal";
-            string unsignedKey = "UnsignedVal";
-
-            bool boolVal = true;
-            string stringVal = "Test String";
-            ulong unsignedVal = 254734;
-
-            var dictVal = new Dictionary<string, object>{ 
-                [boolKey] = new OTSData(OTSTypes.BOOL, boolVal),  
-                [stringKey] = new OTSData(OTSTypes.STRING, stringVal),  
-                [unsignedKey] = new OTSData(OTSTypes.UNSIGNED, unsignedVal),  
-            };
-
-            var cfg = _mapProvider.GetConfig("Value");
-            Assert.That(cfg, Is.Not.Null);
-
-            cfg.Set(new OTSData(OTSTypes.MAP, dictVal));
-            
-            var retData = cfg.Get();
-            Assert.That(retData, Is.Not.Null);
-
-            var retDict = retData.As<Dictionary<string, object>>();
-
-            Assert.Multiple(() =>
-            {
-                Assert.That(retDict!.TryGetValue(boolKey, out var rbool), Is.True);
-                Assert.That(retDict.TryGetValue(stringKey, out var rstr), Is.True);
-                Assert.That(retDict.TryGetValue(unsignedKey, out var rulong), Is.True);
-
-                OTSData rboolVal = (OTSData)rbool!;
-                OTSData rstrVal = (OTSData)rstr!;
-                OTSData rulongVal = (OTSData)rulong!;
-
-                Assert.That(rboolVal.As<bool>(), Is.EqualTo(boolVal));
-                Assert.That(rstrVal.As<string>(), Is.EqualTo(stringVal));
-                Assert.That(rulongVal.As<ulong>(), Is.EqualTo(unsignedVal));
-            });
+            var res = SetTestValue<string>(StdLibUtils.ProvidersConstString, testVal);
+            Assert.That(res, Is.EqualTo(testVal));
         }
 
         [Test]
         public void ListConst()
         {
-            ulong unsignedVal = 200;
-            long signedVal = -2500;
-            double deciVal = 234.544f;
+            List<object> testVal = [1, 2];
+            var res = SetTestValue<List<object>>(StdLibUtils.ProvidersConstList, testVal);
+            Assert.That(res, Is.EquivalentTo(testVal));
+        }
 
-            List<object> testVal = [
-                unsignedVal, signedVal, deciVal    
-            ];
-
-            var cfg = _listProvider.GetConfig("Value");
-            Assert.That(cfg, Is.Not.Null);
-
-            cfg.Set(new OTSData(OTSTypes.LIST, testVal));
-
-            var retData = cfg.Get();
-            Assert.That(retData, Is.Not.Null);
-
-            var retArr = retData.As<List<object>>();
-            Assert.Multiple(() =>
+        [Test]
+        public void MapConst()
+        {
+            Dictionary<string, object> testVal = new()
             {
-                Assert.That(retArr, Is.Not.Null);
-                Assert.That(retArr!, Has.Count.EqualTo(3));
-                Assert.That(retArr!.ElementAt(0), Is.EqualTo(unsignedVal));
-                Assert.That(retArr!.ElementAt(1), Is.EqualTo(signedVal));
-                Assert.That(retArr!.ElementAt(2), Is.EqualTo(deciVal));
-            });
+                ["Value 1"] = 2,
+                ["Value 2"] = 3.6,
+            };
+
+            var res = SetTestValue<Dictionary<string, object>>(StdLibUtils.ProvidersConstMap, testVal);
+            Assert.That(res, Is.EquivalentTo(testVal));
         }
     }
 

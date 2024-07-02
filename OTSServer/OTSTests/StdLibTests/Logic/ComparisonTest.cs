@@ -31,13 +31,13 @@ namespace OTSTests.StdLibTests.Logic
             _pluginManager = new();
             try
             {
-                _providerLib = _pluginManager.GetLibrary("OTSLogic")!;
-                _equOp = _providerLib.GetComponent("LogicalEqual")!;
-                _nEquOp = _providerLib.GetComponent("LogicalNotEqual")!;
-                _lessOp = _providerLib.GetComponent("LogicalLess")!;
-                _grtrOp = _providerLib.GetComponent("LogicalGreater")!;
-                _lessEquOp = _providerLib.GetComponent("LogicalLessEqual")!;
-                _grtrEquOp = _providerLib.GetComponent("LogicalGreaterEqual")!;
+                _providerLib = _pluginManager.GetLibrary(StdLibUtils.LogicLibName)!;
+                _equOp = _providerLib.GetComponent(StdLibUtils.LogicalEqual)!;
+                _nEquOp = _providerLib.GetComponent(StdLibUtils.LogicalNotEqual)!;
+                _lessOp = _providerLib.GetComponent(StdLibUtils.LogicalLess)!;
+                _grtrOp = _providerLib.GetComponent(StdLibUtils.LogicalGreater)!;
+                _lessEquOp = _providerLib.GetComponent(StdLibUtils.LogicalLessEqual)!;
+                _grtrEquOp = _providerLib.GetComponent(StdLibUtils.LogicalGreaterEqual)!;
 
             }
             catch (Exception) { Assert.Fail(); }
@@ -53,8 +53,8 @@ namespace OTSTests.StdLibTests.Logic
 
             input1?.Set(new OTSData(OTSTypes.SIGNED, lValue));
             input2?.Set(new OTSData(OTSTypes.SIGNED, rValue));
-
-            var res = result?.Get()?.As<bool>();
+            _equOp.Update();
+            var res = result?.Value?.As<bool>();
 
             return res ?? false;
         }
@@ -80,8 +80,8 @@ namespace OTSTests.StdLibTests.Logic
 
             input1?.Set(new OTSData(OTSTypes.STRING, lValue));
             input2?.Set(new OTSData(OTSTypes.STRING, rValue));
-
-            var res = result?.Get()?.As<bool>();
+            _nEquOp.Update();
+            var res = result?.Value?.As<bool>();
 
             return res ?? false;
         }
@@ -106,8 +106,8 @@ namespace OTSTests.StdLibTests.Logic
 
             input1?.Set(new OTSData(OTSTypes.SIGNED, lValue));
             input2?.Set(new OTSData(OTSTypes.SIGNED, rValue));
-
-            var res = result?.Get()?.As<bool>();
+            _grtrOp.Update();
+            var res = result?.Value?.As<bool>();
 
             return res ?? false;
         }
@@ -132,8 +132,8 @@ namespace OTSTests.StdLibTests.Logic
 
             input1?.Set(new OTSData(OTSTypes.SIGNED, lValue));
             input2?.Set(new OTSData(OTSTypes.SIGNED, rValue));
-
-            var res = result?.Get()?.As<bool>();
+            _lessOp.Update();
+            var res = result?.Value?.As<bool>();
 
             return res ?? false;
         }
@@ -158,8 +158,8 @@ namespace OTSTests.StdLibTests.Logic
 
             input1?.Set(new OTSData(OTSTypes.SIGNED, lValue));
             input2?.Set(new OTSData(OTSTypes.SIGNED, rValue));
-
-            var res = result?.Get()?.As<bool>();
+            _grtrEquOp.Update();
+            var res = result?.Value?.As<bool>();
 
             return res ?? false;
         }
@@ -184,8 +184,8 @@ namespace OTSTests.StdLibTests.Logic
 
             input1?.Set(new OTSData(OTSTypes.SIGNED, lValue));
             input2?.Set(new OTSData(OTSTypes.SIGNED, rValue));
-
-            var res = result?.Get()?.As<bool>();
+            _lessEquOp.Update();
+            var res = result?.Value?.As<bool>();
 
             return res ?? false;
         }

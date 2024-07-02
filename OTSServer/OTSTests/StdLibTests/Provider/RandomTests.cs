@@ -13,9 +13,7 @@ namespace OTSTests.StdLibTests.Provider
     {
         private SingleSetup _setup;
         private PluginManager _pluginManager;
-        private IOTSLibrary _providerLib;
-        private IOTSComponent _signedProvider;
-        private IOTSComponent _doubleProvider;
+        private SingleSetupPlugins _setupPlugins;
 
         [TearDown]
         public void Cleanup() { _setup.Dispose(); }
@@ -23,79 +21,71 @@ namespace OTSTests.StdLibTests.Provider
         [SetUp]
         public void Setup()
         {
-            _setup = SingleSetup.GetInstance();
             _pluginManager = new();
-            try
-            {
-                _providerLib = _pluginManager.GetLibrary("OTSProvider")!;
-                _signedProvider = _providerLib.GetComponent("SignedRandomProvider")!;
-                _doubleProvider = _providerLib.GetComponent("DecimalRandomProvider")!;
-            }
-            catch (Exception) { Assert.Fail(); }
+            _setup = SingleSetup.GetInstance()
+                .EnsurePlugins()
+                .EnsureLibrary(StdLibUtils.ProvidersLibName)
+                .EnsureComponent(StdLibUtils.ProvidersLibName, StdLibUtils.ProvidersRandomSigned)
+                .EnsureComponent(StdLibUtils.ProvidersLibName, StdLibUtils.ProvidersRandomDecimal)
+                .EndPlugins;
+            _setupPlugins =  _setup.PluginSetups!;
+        }
+
+        private T? SetTestValue<T>(string componentName, T min, T max)
+        {
+            var type = TypeConversion.TypeFromGeneric<T>();
+            _setupPlugins.GetComponent(componentName, out var cfg);
+            cfg!.GetConfig("MinValue")?.Set(new OTSData(type, min));
+            cfg!.GetConfig("MaxValue")?.Set(new OTSData(type, max));
+            cfg.Update();
+            var res = cfg.GetOutput("Result")!.Value!.As<T>();
+
+            return res;
         }
 
         [Test]
         public void SignedRandom()
         {
-            var minField = _signedProvider.GetConfig("MinValue");
-            var maxField = _signedProvider.GetConfig("MaxValue");
-            var result = _signedProvider.GetOutput("Result");
+            const long min = -1000;
+            const long max = 1000;
 
-            Assert.Multiple(() =>
+            List<long> values = [];
+            for(var i = 0; i < 20; i++)
             {
-                Assert.That(result, Is.Not.Null);
-                Assert.That(minField, Is.Not.Null);
-                Assert.That(maxField, Is.Not.Null);
-            });
-
-            List<long> numbers = [];
-            const long minVal = -200;
-            const long maxVal = 200;
-            minField.Set(new OTSData(OTSTypes.SIGNED,minVal));
-            maxField.Set(new OTSData(OTSTypes.SIGNED, maxVal));
-
-            for(var i = 0; i < 100; i++)
-            {
-                numbers.Add(result.Get()!.As<long>());
+                var value = SetTestValue<long>(StdLibUtils.ProvidersRandomSigned, min, max);
+                values.Add(value);
             }
 
             Assert.Multiple(() =>
             {
-                Assert.That(numbers.Any(x => x < minVal || x > maxVal), Is.False);
-                Assert.That(numbers.Distinct().ToList(), Has.Count.GreaterThan(1));
+                var allBetween = values.All(x => x >= min && x < max);
+                Assert.That(allBetween, Is.True);
+
+                var distinctCount = values.Distinct().Count();
+                Assert.That(distinctCount, Is.GreaterThan(1));
             });
         }
 
         [Test]
         public void DoubleRandom()
         {
-            var minField = _doubleProvider.GetConfig("MinValue");
-            var maxField = _doubleProvider.GetConfig("MaxValue");
-            var result = _doubleProvider.GetOutput("Result");
+            const double min = -1000.5;
+            const double max = 1000.8;
 
-            Assert.Multiple(() =>
+            List<double> values = [];
+            for(var i = 0; i < 20; i++)
             {
-                Assert.That(result, Is.Not.Null);
-                Assert.That(minField, Is.Not.Null);
-                Assert.That(maxField, Is.Not.Null);
-            });
-
-            List<double> numbers = [];
-            const double minVal = -200.5;
-            const double maxVal = 200.5;
-            minField.Set(new OTSData(OTSTypes.DECIMAL, minVal));
-            maxField.Set(new OTSData(OTSTypes.DECIMAL, maxVal));
-
-            const uint numItems = 100;
-            for(var i = 0; i < numItems; i++)
-            {
-                numbers.Add(result.Get()!.As<double>());
+                var value = SetTestValue<double>(StdLibUtils.ProvidersRandomSigned, min, max);
+                values.Add(value);
             }
 
             Assert.Multiple(() =>
             {
-                Assert.That(numbers.Any(x => x < minVal || x > maxVal), Is.False);
-                Assert.That(numbers.Distinct().ToList(), Has.Count.EqualTo(numItems));
+                var allBetween = values.All(x => x >= min && x < max);
+                Assert.That(allBetween, Is.True);
+
+                var distinctCount = values.Distinct().Count();
+                Assert.That(distinctCount, Is.GreaterThan(1));
             });
         }
 

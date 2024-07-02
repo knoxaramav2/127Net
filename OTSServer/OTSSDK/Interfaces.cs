@@ -72,6 +72,15 @@
 
     #region Component
 
+    public enum OTSComponentClass
+    {
+        PROVIDER,
+        ACTUATOR,
+        MONITOR,
+        SINGLE,
+        NOMAD,
+    }
+
     public interface IOTSComponentDefinition<out TInput, out TView, out TOutput, out TField>
         where TInput : IOTSInputDefinition
         where TView  : IOTSViewDefinition
@@ -85,6 +94,7 @@
         IEnumerable<TView> Views { get; }
         IEnumerable<TOutput> Outputs { get; }
         IEnumerable<TField> Fields { get; }
+        Lazy<OTSComponentClass> ComponentClass { get; }
     }
 
     public interface IOTSComponentTemplate<T> : 
@@ -100,18 +110,22 @@
         IOTSOutput? GetOutput(string name);
         IOTSView? GetView(string name);
         IOTSConfigField? GetConfig(string name);
-        public bool AddViewingInput(IOTSView newInput);
-        public bool RemoveViewingInput(string viewInputName);
+        public IOTSView? AddViewingInput(IOTSOutput providerNode);
+        public bool RemoveViewingInput(Guid viewId);
+        public void Update();
     }
 
     #endregion
 
+
     #region IO Nodes
 
-    public interface IOTSIONodeDefinition
+    public interface IOTSIONodeDefinition : IOTSObject
     {
+        //Guid NodeId { get; }
         Guid ComponentId { get; }
         OTSTypes OTSType { get; }
+        IOTSData? Value { get; set; }
     }
 
 
@@ -121,22 +135,22 @@
         IOTSInputDefinition { }
 
     public interface IOTSInput : 
-        IOTSObject, IOTSInputDefinition 
+        IOTSInputDefinition 
     {
         void Set(IOTSData? data);
         IOTSData? Peak();
     }
 
-    public interface IOTSViewDefinition : IOTSIONodeDefinition { }
+    public interface IOTSViewDefinition : IOTSInputDefinition 
+        { IOTSOutput Output { get; } }
     public interface IOTSViewTemplate:
         IOTSTemplate<IOTSView>,
         IOTSViewDefinition { }
 
     public interface IOTSView : 
-        IOTSObject, IOTSViewDefinition 
+        IOTSViewDefinition, IOTSInput
     {
-        void Set(IOTSData? data);
-        IOTSData? Peak();
+
     }
    
     public interface IOTSOutputDefinition : IOTSIONodeDefinition { }
@@ -145,20 +159,19 @@
         IOTSOutputDefinition { }
 
     public interface IOTSOutput : 
-        IOTSObject, IOTSOutputDefinition
+        IOTSOutputDefinition
     {
-        IOTSData? Get();
     }
 
     #endregion
 
     public interface IOTSLink : IOTSObject
     {
-        Guid ProviderComponentId { get; }
-        Guid ProviderOutputNodeId { get; }
-
-        Guid ReceiverComponentId { get; }
-        Guid ReceiverOutputNodeId { get; }
+        /*
+         * Push value from provider to receiver
+         * Leak result as output
+         */
+        public IOTSData? Propogate();
     }
 
     public interface IOTSApplication : IOTSObject

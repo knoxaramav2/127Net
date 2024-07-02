@@ -1,13 +1,12 @@
 ﻿using OTSSDK;
 using OTSStdMath;
-using OTSStdMathx;
 
 namespace OTSPluginMath
 {
     public class OTSMathLib : IOTSLibrary
     {
         //TODO Replace fields with CICD configurable
-        public string Name { get; } = "OTSMath";
+        public string Name { get; } = StdLibUtils.MathLibName;
         public string Version { get; } = "0.1.0";
         public string Author { get; } = "KnoxaramaV2";
         public string Platform { get; } = CommonUtil.GetOsStr; 
@@ -21,8 +20,10 @@ namespace OTSPluginMath
         public OTSMathLib()
         {
             Components = [
-                new AdditionComponentTemplate(ID),
-                new SubtractionComponentTemplate(ID)
+                new OTSMathAdditionTemplate(ID),
+                new OTSMathSubtractionTemplate(ID),
+                new OTSMathMultiplicationTemplate(ID),
+                new OTSMathDivisionTemplate(ID),
             ];
         }
     }

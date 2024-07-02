@@ -196,7 +196,7 @@ namespace OTSCommon.Database
         //User account methods
         public int AddUser(string username, string password, RoleAuthority maxAuthority, RoleAuthority currentAuthority)
         {
-            if(DbCtx.Users.Any(x => x.NormalizedUsername.Equals(username, StringComparison.CurrentCultureIgnoreCase)
+            if(DbCtx.Users.Any(x => x.ToUpperdUsername.Equals(username, StringComparison.CurrentCultureIgnoreCase)
              && x.DeletedOn == null)) {
                 return -1;
             }
@@ -208,7 +208,7 @@ namespace OTSCommon.Database
             var user = new UserAccount
             {
                 Username = username,
-                NormalizedUsername = username.ToUpper(),
+                ToUpperdUsername = username.ToUpper(),
                 PassHash = hash,
                 PassSalt = salt,
                 MaxAuthority = maxAuthority,

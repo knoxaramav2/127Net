@@ -6,14 +6,18 @@ using System.Threading.Tasks;
 
 namespace OTSSDK
 {
+    //NOTE: Types in order of casting priority
+    //Types converting from top to bottom
     public enum OTSTypes
     {
-        NONE, 
+        NONE,
         BOOL,
-        SIGNED, UNSIGNED,
+        UNSIGNED,
+        SIGNED,
         DECIMAL,
         STRING,
-        LIST, MAP
+        LIST,
+        MAP,
     }
 
     public static class OTSTypesUtil

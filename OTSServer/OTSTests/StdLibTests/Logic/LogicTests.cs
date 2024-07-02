@@ -45,8 +45,8 @@ namespace OTSTests.StdLibTests.Logic
 
             input1?.Set(new OTSData(OTSTypes.BOOL, lValue));
             input2?.Set(new OTSData(OTSTypes.BOOL, rValue));
-
-            var res = result?.Get()?.As<bool>();
+            _andOp.Update();
+            var res = result?.Value?.As<bool>();
 
             return res ?? false;
         }
@@ -69,8 +69,8 @@ namespace OTSTests.StdLibTests.Logic
 
             input1?.Set(new OTSData(OTSTypes.BOOL, lValue));
             input2?.Set(new OTSData(OTSTypes.BOOL, rValue));
-
-            var res = result?.Get()?.As<bool>();
+            _orOp.Update();
+            var res = result?.Value?.As<bool>();
 
             return res ?? false;
         }
@@ -93,8 +93,8 @@ namespace OTSTests.StdLibTests.Logic
 
             input1?.Set(new OTSData(OTSTypes.BOOL, lValue));
             input2?.Set(new OTSData(OTSTypes.BOOL, rValue));
-
-            var res = result?.Get()?.As<bool>();
+            _xorOp.Update();
+            var res = result?.Value?.As<bool>();
 
             return res ?? false;
         }

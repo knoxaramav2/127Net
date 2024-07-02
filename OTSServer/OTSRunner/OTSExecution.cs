@@ -13,15 +13,15 @@ namespace OTSExecution
 
     public class OTSExecManager : IOTSExecManager
     {
-        private IObjectStore ObjectStore;
-        private IPluginManager PluginManager;
-        private IOTSAppManager AppManager;
+        //private readonly IObjectStore ObjectStore;
+        private readonly IPluginManager PluginManager;
+        //private readonly IOTSAppManager AppManager;
 
         public OTSExecManager()
         {
             PluginManager = new PluginManager();
-            AppManager = new OTSAppManager();
-            ObjectStore = new ObjectStore();
+            //AppManager = new OTSAppManager();
+            //ObjectStore = new OTSObjectManager();
         }
 
         public string GetManifest()

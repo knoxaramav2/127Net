@@ -5,7 +5,7 @@ namespace OTSStdMonitor
     public class OTSMonitorLib : IOTSLibrary
     {
         //TODO Replace fields with CICD configurable
-        public string Name { get; } = "OTSMonitor";
+        public string Name { get; } = StdLibUtils.MonitorLibName;
         public string Version { get; } = "0.1.0";
         public string Author { get; } = "KnoxaramaV2";
         public string Platform { get; } = CommonUtil.GetOsStr; 

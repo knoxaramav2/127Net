@@ -5,7 +5,7 @@ namespace OTSDeviceInfo
     public class OTSDeviceInfoLib : IOTSLibrary
     {
         //TODO Replace fields with CICD configurable
-        public string Name { get; } = "OTSDeviceHwInfo";
+        public string Name { get; } = StdLibUtils.DeviceInfoLibName;
         public string Version { get; } = "0.1.0";
         public string Author { get; } = "KnoxaramaV2";
         public string Platform { get; } = CommonUtil.GetOsStr; 

@@ -33,14 +33,15 @@ namespace OTSTests.StdLibTests.Device
         [Test]
         public void ProcessMemory()
         {
-            var comp = _deviceHwLib.GetComponent("MemoryMonitor");
+            var comp = _deviceHwLib.GetComponent(StdLibUtils.MemoryMonitor);
+            comp?.Update();
 
             Assert.Multiple(() =>
             {
                 Assert.That(comp, Is.Not.Null);
                 var processMem = comp!.GetOutput("ProcessMemory");
                 Assert.That(processMem, Is.Not.Null);
-                var value = processMem!.Get()?.As<long>();
+                var value = processMem!.Value?.As<long>();
                 Assert.That(value, Is.Not.Zero);
                 Console.WriteLine($"Process Memory: {value / (1024 * 1024)} MB");
             });
@@ -50,6 +51,7 @@ namespace OTSTests.StdLibTests.Device
         public void SystemMemory()
         {
             var comp = _deviceHwLib.GetComponent("MemoryMonitor");
+            comp?.Update();
 
             Assert.Multiple(() =>
             {
@@ -60,8 +62,8 @@ namespace OTSTests.StdLibTests.Device
                 Assert.That(systemMemTotal, Is.Not.Null);
                 Assert.That(systemMemAvailable, Is.Not.Null);
 
-                var totalMem = systemMemTotal!.Get()?.As<ulong>();
-                var availMem = systemMemAvailable!.Get()?.As<ulong>();
+                var totalMem = systemMemTotal!.Value?.As<ulong>();
+                var availMem = systemMemAvailable!.Value?.As<ulong>();
 
                 Assert.That(totalMem, Is.Not.Zero);
                 Assert.That(availMem, Is.Not.Zero);
