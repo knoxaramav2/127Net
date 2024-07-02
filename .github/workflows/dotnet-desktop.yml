@@ -16,6 +16,12 @@ jobs:
       matrix:
         configuration: [Debug, Release]
 
+    env:
+      Solution_Name: OTSServer/OTSServer.sln                         # Replace with your solution name, i.e. MyWpfApp.sln.
+      Test_Project_Path: OTSServer/OTSTests                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
+      Wap_Project_Directory: OTSServer/OTSServer    # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
+      Wap_Project_Path: OTSServer
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -27,9 +33,11 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore dependencies
+      working-directory: ./OTSServer
       run: dotnet restore
 
     - name: Build Libraries
+      working-directory: ./OTSServer
       run: dotnet build Libraries/**/*.csproj --no-restore --configuration Release
 
     - name: Build
