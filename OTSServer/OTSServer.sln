@@ -26,9 +26,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSStdProvider", "OTSStdPro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSStdMonitor", "OTSStdMonitor\OTSStdMonitor.csproj", "{5503F185-4261-41EA-A212-EEE358BC815E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTStdLogic", "OTStdLogic\OTStdLogic.csproj", "{50E00581-AC3B-41BE-AAE7-F03E79107DC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSStdLogic", "OTSStdLogic\OTSStdLogic.csproj", "{50E00581-AC3B-41BE-AAE7-F03E79107DC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OTSRunner", "OTSRunner\OTSRunner.csproj", "{2883DA50-ED00-4B17-9C6C-DB0BD4498274}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSRunner", "OTSRunner\OTSRunner.csproj", "{2883DA50-ED00-4B17-9C6C-DB0BD4498274}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
