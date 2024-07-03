@@ -13,7 +13,7 @@ jobs:
         working-directory: ./OTSServer
     strategy:
       matrix:
-        configuration: [Release]
+        configuration: [Debug]
         solution: [OTSServer/OTSServer.sln]
 
     runs-on: windows-latest
@@ -41,31 +41,31 @@ jobs:
         Configuration: ${{ matrix.configuration }}
 
     - name: Build SDK
-      run: dotnet build OTSSDK/OTSSDK.csproj --no-restore --configuration Release
+      run: dotnet build OTSSDK/OTSSDK.csproj --no-restore --configuration $env:Configuration
 
     - name: Build Device Info Plugin
-      run: dotnet build OTSDeviceInfo/OTSStdLibDeviceInfo.csproj --no-restore --configuration Release
+      run: dotnet build OTSDeviceInfo/OTSStdLibDeviceInfo.csproj --no-restore --configuration $env:Configuration
 
     - name: Build Math Plugin
-      run: dotnet build OTSPluginMath/OTSStdMath.csproj --no-restore --configuration Release
+      run: dotnet build OTSPluginMath/OTSStdMath.csproj --no-restore --configuration $env:Configuration
 
     - name: Build Monitor Plugin
-      run: dotnet build OTSStdMonitor/OTSStdMonitor.csproj --no-restore --configuration Release
+      run: dotnet build OTSStdMonitor/OTSStdMonitor.csproj --no-restore --configuration $env:Configuration
 
     - name: Build Provider Plugin
-      run: dotnet build OTSStdProvider/OTSStdProvider.csproj --no-restore --configuration Release
+      run: dotnet build OTSStdProvider/OTSStdProvider.csproj --no-restore --configuration $env:Configuration
 
     - name: Build Logic Plugin
-      run: dotnet build OTSStdLogic/OTSStdLogic.csproj --no-restore --configuration Release
+      run: dotnet build OTSStdLogic/OTSStdLogic.csproj --no-restore --configuration $env:Configuration
 
     - name: Build Common library
-      run: dotnet build OTSCommon/OTSCommon.csproj --no-restore --configuration Release
+      run: dotnet build OTSCommon/OTSCommon.csproj --no-restore --configuration $env:Configuration
 
     - name: Build Runner library
-      run: dotnet build OTSRunner/OTSRunner.csproj --no-restore --configuration Release
+      run: dotnet build OTSRunner/OTSRunner.csproj --no-restore --configuration $env:Configuration
 
     - name: Build Tests
-      run: dotnet build OTSTests/OTSTests.csproj --no-restore --configuration Release
+      run: dotnet build OTSTests/OTSTests.csproj --no-restore --configuration $env:Configuration
 
     - name: Copy Plugins
       shell: pwsh
@@ -74,7 +74,7 @@ jobs:
 
      #Execute all unit tests in the solution
     - name: Execute unit tests
-      working-directory: ./OTSServer
+      if: $env:Configuration == Debug
       run: dotnet test
     
     #- name: Copy plugins

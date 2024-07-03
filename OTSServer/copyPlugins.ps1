@@ -1,15 +1,15 @@
 # Define the list of directories to search for .dll files
 $directories = @(
-    ".\OTSDeviceInfo\bin\release\net8.0",
-    ".\OTSPluginMath\bin\release\net8.0",
-	".\OTSStdProvider\bin\release\net8.0",
-	".\OTSStdLogic\bin\release\net8.0",
-    ".\OTSStdMonitor\bin\release\net8.0"
+    ".\OTSDeviceInfo\bin\debug\net8.0",
+    ".\OTSPluginMath\bin\debug\net8.0",
+	".\OTSStdProvider\bin\debug\net8.0",
+	".\OTSStdLogic\bin\debug\net8.0",
+    ".\OTSStdMonitor\bin\debug\net8.0"
 )
 
 # Define the target directory where .dll files will be copied
-$serverDirectory = "OTSServer\bin\release\net8.0\plugins"
-$testsDirectory = "OTSTests\bin\release\net8.0\plugins"
+$serverDirectory = "OTSServer\bin\debug\net8.0\plugins"
+$testsDirectory = "OTSTests\bin\debug\net8.0\plugins"
 
 # Create the target directory if it doesn't exist
 if (-not (Test-Path -Path $serverDirectory)) {
