@@ -70,20 +70,11 @@ jobs:
     - name: Copy Plugins
       shell: pwsh
       run: |
-        ./copyPlugins.ps1
+        ./copyPlugins.ps1 ${{ matrix.configuration }}
 
      #Execute all unit tests in the solution
     - name: Execute unit tests
       if: ${{ matrix.configuration }} == Debug
       run: dotnet test
     
-    #- name: Copy plugins
-    #  run: |
-    #    mkdir -p 
-    
-    # Restore the application to populate the obj folder with RuntimeIdentifiers
-    #- name: Restore the application
-    #  run: msbuild $env:Solution_Name /t:Restore /p:Configuration=${{ matrix.configuration }}
-    #  env:
-    #    Configuration: ${{ matrix.configuration }}
 
