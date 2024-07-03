@@ -30,6 +30,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSStdLogic", "OTSStdLogic\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSRunner", "OTSRunner\OTSRunner.csproj", "{2883DA50-ED00-4B17-9C6C-DB0BD4498274}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B832E5C8-4170-4075-9991-FDFF6F0D626A}"
+	ProjectSection(SolutionItems) = preProject
+		copyPlugins.ps1 = copyPlugins.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

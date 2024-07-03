@@ -10,8 +10,8 @@
     <ProjectReference Include="..\OTSSDK\OTSSDK.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <!--<Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="if $(ConfigurationName) == Debug ( echo D|xcopy /Y &quot;$(ProjectDir)$(OutDir)$(ProjectName).dll&quot; &quot;$(SolutionDir)OTSServer/$(OutDir)Plugins&quot; &#xD;&#xA;echo D|xcopy /Y &quot;$(ProjectDir)$(OutDir)$(ProjectName).dll&quot; &quot;$(SolutionDir)OTSTests/$(OutDir)Plugins&quot;)" />
-  </Target>
+  </Target>-->
 
 </Project>
