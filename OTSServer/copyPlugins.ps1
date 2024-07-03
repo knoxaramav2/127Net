@@ -28,6 +28,7 @@ foreach ($directory in $directories) {
 
     # Copy each .dll file to the target directory
     foreach ($file in $dllFiles) {
+		Write-Output "       Copy $(${file}.FullName) to $serverDirectory"
         Copy-Item -Path $file.FullName -Destination $serverDirectory -Force
 		Copy-Item -Path $file.FullName -Destination $testsDirectory -Force
     }
