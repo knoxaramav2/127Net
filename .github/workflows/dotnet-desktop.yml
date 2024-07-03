@@ -13,7 +13,7 @@ jobs:
         working-directory: ./OTSServer
     strategy:
       matrix:
-        configuration: [Debug, Release]
+        configuration: [Release]
         solution: [OTSServer/OTSServer.sln]
 
     runs-on: windows-latest
