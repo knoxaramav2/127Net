@@ -36,36 +36,36 @@ jobs:
 
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore the application
-      run: msbuild $env:Solution_Name /t:Restore /p:Configuration=Release
+      run: msbuild $env:Solution_Name /t:Restore /p:Configuration=${{ matrix.configuration }}
       env:
         Configuration: ${{ matrix.configuration }}
 
     - name: Build SDK
-      run: dotnet build OTSSDK/OTSSDK.csproj --no-restore --configuration $env:Configuration
+      run: dotnet build OTSSDK/OTSSDK.csproj --no-restore --configuration ${{ matrix.configuration }}
 
     - name: Build Device Info Plugin
-      run: dotnet build OTSDeviceInfo/OTSStdLibDeviceInfo.csproj --no-restore --configuration $env:Configuration
+      run: dotnet build OTSDeviceInfo/OTSStdLibDeviceInfo.csproj --no-restore --configuration ${{ matrix.configuration }}
 
     - name: Build Math Plugin
-      run: dotnet build OTSPluginMath/OTSStdMath.csproj --no-restore --configuration $env:Configuration
+      run: dotnet build OTSPluginMath/OTSStdMath.csproj --no-restore --configuration ${{ matrix.configuration }}
 
     - name: Build Monitor Plugin
-      run: dotnet build OTSStdMonitor/OTSStdMonitor.csproj --no-restore --configuration $env:Configuration
+      run: dotnet build OTSStdMonitor/OTSStdMonitor.csproj --no-restore --configuration ${{ matrix.configuration }}
 
     - name: Build Provider Plugin
-      run: dotnet build OTSStdProvider/OTSStdProvider.csproj --no-restore --configuration $env:Configuration
+      run: dotnet build OTSStdProvider/OTSStdProvider.csproj --no-restore --configuration ${{ matrix.configuration }}
 
     - name: Build Logic Plugin
-      run: dotnet build OTSStdLogic/OTSStdLogic.csproj --no-restore --configuration $env:Configuration
+      run: dotnet build OTSStdLogic/OTSStdLogic.csproj --no-restore --configuration ${{ matrix.configuration }}
 
     - name: Build Common library
-      run: dotnet build OTSCommon/OTSCommon.csproj --no-restore --configuration $env:Configuration
+      run: dotnet build OTSCommon/OTSCommon.csproj --no-restore --configuration ${{ matrix.configuration }}
 
     - name: Build Runner library
-      run: dotnet build OTSRunner/OTSRunner.csproj --no-restore --configuration $env:Configuration
+      run: dotnet build OTSRunner/OTSRunner.csproj --no-restore --configuration ${{ matrix.configuration }}
 
     - name: Build Tests
-      run: dotnet build OTSTests/OTSTests.csproj --no-restore --configuration $env:Configuration
+      run: dotnet build OTSTests/OTSTests.csproj --no-restore --configuration ${{ matrix.configuration }}
 
     - name: Copy Plugins
       shell: pwsh
@@ -83,7 +83,7 @@ jobs:
     
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     #- name: Restore the application
-    #  run: msbuild $env:Solution_Name /t:Restore /p:Configuration=$env:Configuration
+    #  run: msbuild $env:Solution_Name /t:Restore /p:Configuration=${{ matrix.configuration }}
     #  env:
     #    Configuration: ${{ matrix.configuration }}
 
