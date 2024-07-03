@@ -28,7 +28,7 @@ namespace OTSCommon.Plugins
                 pluginDirectory;
             Directory.CreateDirectory(PluginDirectory);
             Console.WriteLine($"Scanning: {PluginDirectory}");
-            PrintDirPaths(AppDomain.CurrentDomain.BaseDirectory, 0);
+            PrintDirPaths(PluginDirectory, 0);
             DiscoverPlugins();
         }
 

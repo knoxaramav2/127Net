@@ -61,14 +61,14 @@ namespace OTSTests.StdLibTests.Monitor
         }
 
         [Test]
-        public void BooMonitor1()
+        public void BoolMonitor1()
         {
             var res = SetAndReturnBoolMonitorValue(true);
             Assert.That(res, Is.True);
         }
 
         [Test]
-        public void BooMonitor0()
+        public void BoolMonitor0()
         {
             var res = SetAndReturnBoolMonitorValue(false);
             Assert.That(res, Is.False);

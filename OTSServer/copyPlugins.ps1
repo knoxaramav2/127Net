@@ -8,8 +8,8 @@ $directories = @(
 )
 
 # Define the target directory where .dll files will be copied
-$serverDirectory = "OTSServer\bin\release\plugins"
-$testsDirectory = "OTSTests\bin\release\plugins"
+$serverDirectory = "OTSServer\bin\release\net8.0\plugins"
+$testsDirectory = "OTSTests\bin\release\net8.0\plugins"
 
 # Create the target directory if it doesn't exist
 if (-not (Test-Path -Path $serverDirectory)) {
