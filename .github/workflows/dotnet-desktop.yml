@@ -34,38 +34,45 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
 
-    # Execute all unit tests in the solution
-    #- name: Execute unit tests
-    #  working-directory: ./OTSServer
-    #  run: dotnet test
+    - name: Build SDK
+      run: dotnet build OTSSDK/OTSSDK.csproj --no-restore --configuration Release
 
+    - name: Build Device Info Plugin
+      run: dotnet build OTSDeviceInfo/OTSStdLibDeviceInfo.csproj --no-restore --configuration Release
+
+    - name: Build Math Plugin
+      run: dotnet build OTSPluginMath/OTSStdMath.csproj --no-restore --configuration Release
+
+    - name: Build Monitor Plugin
+      run: dotnet build OTSStdMonitor/OTSStdMonitor.csproj --no-restore --configuration Release
+
+    - name: Build Provider Plugin
+      run: dotnet build OTSStdProvider/OTSStdProvider.csproj --no-restore --configuration Release
+
+    - name: Build Logic Plugin
+      run: dotnet build OTStdLogic/OTStdLogic.csproj --no-restore --configuration Release
+
+    - name: Build Common library
+      run: dotnet build OTSCommon/OTSCommon.csproj --no-restore --configuration Release
+
+    - name: Build Runner library
+      run: dotnet build OTSRunner/OTSRunner.csproj --no-restore --configuration Release
+
+    - name: Build Tests
+      run: dotnet build OTSTests/OTSTests.csproj --no-restore --configuration Release
+
+     #Execute all unit tests in the solution
+    - name: Execute unit tests
+      working-directory: ./OTSServer
+      run: dotnet test
+    
+    #- name: Copy plugins
+    #  run: |
+    #    mkdir -p 
+    
     # Restore the application to populate the obj folder with RuntimeIdentifiers
-    - name: Restore the application
-      run: msbuild $env:Solution_Name /t:Restore /p:Configuration=$env:Configuration
-      env:
-        Configuration: ${{ matrix.configuration }}
+    #- name: Restore the application
+    #  run: msbuild $env:Solution_Name /t:Restore /p:Configuration=$env:Configuration
+    #  env:
+    #    Configuration: ${{ matrix.configuration }}
 
-  list-files:
-    runs-on: windows-latest
-    outputs:
-      paths: ${{ steps.list-files.outputs.paths }}
-    steps:
-      - name: List Files
-        id: list-files
-        uses: mirko-felice/list-files-action@v3.0.5
-        with:
-          repo: ${{ github.repository }}
-          ref: ${{ github.ref }}
-          path: "."
-          ext: ".dll"
-  Test:
-    needs: list-files
-    strategy:
-      matrix:
-        paths: ${{ fromJson(needs.list-files.outputs.paths) }}
-    runs-on: windows-latest
-    steps:
-      - name: Output results
-        run: |
-          echo ${{ matrix.paths }}
-      
