@@ -13,7 +13,7 @@ jobs:
         working-directory: ./OTSServer
     strategy:
       matrix:
-        configuration: [Debug]
+        configuration: [Debug, Release]
         solution: [OTSServer/OTSServer.sln]
 
     runs-on: windows-latest
@@ -74,7 +74,7 @@ jobs:
 
      #Execute all unit tests in the solution
     - name: Execute unit tests
-      if: $env:Configuration == Debug
+      if: $({ matrix.configuration}) == Debug
       run: dotnet test
     
     #- name: Copy plugins
