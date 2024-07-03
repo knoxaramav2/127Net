@@ -9,7 +9,9 @@ on:
 jobs:
 
   build:
-
+    defaults:
+      run:
+        working-directory: ./OTSServer
     strategy:
       matrix:
         configuration: [Debug, Release]
