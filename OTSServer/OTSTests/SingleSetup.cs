@@ -1,11 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using NUnit.Framework.Constraints;
 using OTSCommon.Database;
 using OTSCommon.Models;
 using OTSCommon.Plugins;
 using OTSCommon.Security;
 using OTSSDK;
+using OTSServerAuth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,8 +79,9 @@ namespace OTSTests
         private static SingleSetup? Instance { get; set; }
 
         public OTSDbCtx OTSDbCtx { get; private set; }
-        public OTSService OTSService { get; private set; }
+        public OTSDbService OTSService { get; private set; }
         public SingleSetupPlugins? PluginSetups { get; set; }
+        public Mock<OTSAuthenticate>? AuthManager { get; private set; }
         
         private SingleSetup() 
         { 
@@ -88,16 +93,30 @@ namespace OTSTests
                 .Options;
             OTSDbCtx = new OTSDbCtx(dbOptions, config);
             OTSDbCtx.Database.EnsureDeleted();
-            OTSService = new OTSService(OTSDbCtx);
+            OTSService = new OTSDbService(OTSDbCtx);
+        }
+
+        private void InitAuthManager()
+        {
+            var userStore = Mock.Of<UserStore>();
+            var userManager = new Mock<UserManager<UserAccount>>(userStore);
+            var signinManger = new Mock<SignInManager<UserAccount>>();
+
+            AuthManager = new Mock<OTSAuthenticate>( userManager, userStore, signinManger, OTSDbCtx );
         }
 
         public SingleSetup EnsureUserAccount(string username, string password, bool admin=false)
         {
+            if(AuthManager == null) { InitAuthManager(); }
+
             var maxAuthStr = admin ? "Admin" : "Owner";
             var maxAuth = OTSService.GetRoleAuthority(maxAuthStr)!;
-            var opAuth = maxAuth.Downgrade ?? maxAuth;
+            //var opAuth = maxAuth.Downgrade ?? maxAuth;
 
-            OTSService.AddUser(username, password, maxAuth, opAuth);
+            //OTSService.AddUser(username, password, maxAuth, opAuth);
+            //OTSService.CreateUser();
+
+            //AuthManager?.Try
 
             return this;
         }

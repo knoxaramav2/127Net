@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34902.65
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSServer", "OTSServer\OTSServer\OTSServer.csproj", "{B49007CC-F32A-47DF-AB88-28AC9EE4B0B7}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSServer.Client", "OTSServer\OTSServer.Client\OTSServer.Client.csproj", "{02553BBA-3BCB-4EEC-A34F-9D15495A148F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSCommon", "OTSCommon\OTSCommon.csproj", "{448B63F3-3023-45AB-8BFB-849DE8399707}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSTests", "OTSTests\OTSTests.csproj", "{760AAF21-B674-4FAC-BD42-A891E75AB09C}"
@@ -35,20 +31,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		copyPlugins.ps1 = copyPlugins.ps1
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OTSServer", "OTSServer\OTSServer\OTSServer.csproj", "{908B93EE-C628-4FF5-A48C-7D6C52C08562}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OTSServer.Client", "OTSServer\OTSServer.Client\OTSServer.Client.csproj", "{170B8527-54D1-42CE-8813-EE5C61ED618C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OTSServerAuth", "OTSServerAuth\OTSServerAuth.csproj", "{D1FC7B5A-901F-4EA3-A6FB-740DDA1F6C1B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B49007CC-F32A-47DF-AB88-28AC9EE4B0B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B49007CC-F32A-47DF-AB88-28AC9EE4B0B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B49007CC-F32A-47DF-AB88-28AC9EE4B0B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B49007CC-F32A-47DF-AB88-28AC9EE4B0B7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{02553BBA-3BCB-4EEC-A34F-9D15495A148F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{02553BBA-3BCB-4EEC-A34F-9D15495A148F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{02553BBA-3BCB-4EEC-A34F-9D15495A148F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{02553BBA-3BCB-4EEC-A34F-9D15495A148F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{448B63F3-3023-45AB-8BFB-849DE8399707}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{448B63F3-3023-45AB-8BFB-849DE8399707}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{448B63F3-3023-45AB-8BFB-849DE8399707}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -85,6 +79,18 @@ Global
 		{2883DA50-ED00-4B17-9C6C-DB0BD4498274}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2883DA50-ED00-4B17-9C6C-DB0BD4498274}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2883DA50-ED00-4B17-9C6C-DB0BD4498274}.Release|Any CPU.Build.0 = Release|Any CPU
+		{908B93EE-C628-4FF5-A48C-7D6C52C08562}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{908B93EE-C628-4FF5-A48C-7D6C52C08562}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{908B93EE-C628-4FF5-A48C-7D6C52C08562}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{908B93EE-C628-4FF5-A48C-7D6C52C08562}.Release|Any CPU.Build.0 = Release|Any CPU
+		{170B8527-54D1-42CE-8813-EE5C61ED618C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{170B8527-54D1-42CE-8813-EE5C61ED618C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{170B8527-54D1-42CE-8813-EE5C61ED618C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{170B8527-54D1-42CE-8813-EE5C61ED618C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1FC7B5A-901F-4EA3-A6FB-740DDA1F6C1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1FC7B5A-901F-4EA3-A6FB-740DDA1F6C1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1FC7B5A-901F-4EA3-A6FB-740DDA1F6C1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1FC7B5A-901F-4EA3-A6FB-740DDA1F6C1B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

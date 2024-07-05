@@ -11,7 +11,7 @@ namespace OTSTests
     public class UserTests
     {
         private SingleSetup _setup;
-        private OTSService _dbService;
+        private OTSDbService _dbService;
 
         private readonly string _ownerUser = "DevUser";
         private readonly string _adminUser = "AdminUser";

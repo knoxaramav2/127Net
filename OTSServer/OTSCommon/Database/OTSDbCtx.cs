@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Mysqlx.Crud;
-using Org.BouncyCastle.Asn1.X509.Qualified;
 using OTSCommon.Configuration;
 using OTSCommon.Models;
 using OTSCommon.Security;
-using System.Data.Common;
 using System.Reflection.Metadata.Ecma335;
 
 namespace OTSCommon.Database
@@ -15,158 +13,89 @@ namespace OTSCommon.Database
     {
         private readonly IConfiguration _config = config;
 
-        public virtual DbSet<UserAccount> Users { get; set; }
-        public virtual DbSet<UserSettings> UserSettings { get; set; }
+        //User
+        public virtual DbSet<UserAccount> UserAccounts { get; set; }
+        public DbSet<IdentityUserClaim<int>> UserIdentityClaim { get; set; }
+
+        //Role Authority
         public virtual DbSet<RoleAuthority> RoleAuthorities { get; set; }
-        public virtual DbSet<SignIn> SignIns { get; set; }
-        public virtual DbSet<Device> Devices { get; set; }
-        public virtual DbSet<DeviceOwner> DeviceOwners { get; set; }
-        public virtual DbSet<DeviceConnection> DeviceConnections { get; set; }
-        public virtual DbSet<PeerContract> PeerContracts { get; set; }
-        public virtual DbSet<TransientCertificate> TransientCertificates { get; set; }
-        public virtual DbSet<AppInfo> OTSApplication { get; set; }
-        public virtual DbSet<OTSSchematic> OTSSchematics { get; set; }
-        public virtual DbSet<OTSSchematicEditorSettings> OTSSchematicEditorSettings { get; set; }
-        public virtual DbSet<OTSSchematicTheme> OTSSchematicThemes { get; set; }
+        public virtual DbSet<UserRole> UserRoles { get; set; }
+
+        //Device
+        public virtual DbSet<NetworkedDevice> NetworkedDevices { get; set; }
+        public virtual DbSet<NetworkedDeviceOwner> NetworkedDeviceOwners { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<UserAccount>(e =>
+            //Authorities
+            builder.Entity<UserRole>(e =>
             {
-                e.HasKey(x => x.Id);
-                e.HasOne(x => x.MaxAuthority)
-                    .WithMany(x => x.MaximumAuthorities)
-                    .HasForeignKey(x => x.MaxAuthorityId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                e.HasOne(x => x.OperatingAuthority)
-                    .WithMany(x => x.OperatingAuthorities)
-                    .HasForeignKey(x => x.OperatingAuthorityId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                e.HasMany(x => x.DeviceOwners)
-                    .WithOne(x => x.Owner)
-                    .HasForeignKey(x => x.OwnerId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            builder.Entity<UserSettings>( e =>
-            {
-                e.HasKey(x => x.Id);
-                e.HasOne(x => x.EditorSettings)
-                    .WithOne(x => x.UserSettings)
-                    .HasForeignKey<UserSettings>(x => x.Id)
-                    .OnDelete(DeleteBehavior.Cascade)
-                    .IsRequired();
+                e.HasOne(x => x.RoleAuthority)
+                    .WithMany(x => x.UserRoles)
+                    .HasForeignKey(x => x.RoleAuthorityId);
+                e.HasOne(x => x.UserAccount)
+                    .WithMany(x => x.Roles)
+                    .HasForeignKey(x => x.UserAccountId);
             });
 
             builder.Entity<RoleAuthority>(e =>
             {
-                e.HasKey( x => x.Id);
-                e.HasOne(x => x.Downgrade)
-                    .WithMany(x => x.RoleAuthorities)
-                    .HasForeignKey(x => x.DowngradeId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                
             });
 
-            builder.Entity<Device>(e =>
+            //Users
+            builder.Entity<UserAccount>(e =>
             {
-                e.HasKey(x => x.Id);
-                e.HasMany(x => x.Owners)
-                    .WithOne(x => x.Device)
-                    .HasForeignKey(x => x.DeviceId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                e.HasMany(x => x.Connections1)
-                    .WithOne(x => x.Device1)
-                    .HasForeignKey(x => x.DeviceId1)
-                    .OnDelete(DeleteBehavior.Cascade);
-                e.HasMany(x => x.Connections2)
-                    .WithOne(x => x.Device2)
-                    .HasForeignKey(x => x.DeviceId2)
-                    .OnDelete(DeleteBehavior.Cascade);
-                e.HasMany(x => x.PeerContracts)
-                    .WithOne(x => x.Peer)
-                    .HasForeignKey(x => x.PeerId)
-                    .OnDelete(DeleteBehavior.Cascade);
-                e.HasMany(x => x.TransientRefererCertificates)
-                    .WithOne(x => x.Referer)
-                    .HasForeignKey(x => x.RefererId)
-                    .OnDelete(DeleteBehavior.Cascade);
-                e.HasMany(x => x.TransientClientCertificates)
-                    .WithOne(x => x.Client)
-                    .HasForeignKey(x => x.ClientId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                
             });
 
-            builder.Entity<DeviceOwner>(e =>
+            //Devices
+            builder.Entity<NetworkedDevice>(e =>
             {
-                e.HasKey(x => x.Id);
+                e.HasKey(e => e.Id);
+            });
+
+            builder.Entity<NetworkedDeviceOwner>(e =>
+            {
+                e.HasKey(e => e.Id);
+                e.HasOne(x => x.Owner)
+                    .WithMany(x => x.OwnedDevices)
+                    .HasForeignKey(e => e.DeviceId)
+                    .OnDelete(DeleteBehavior.Restrict);
                 e.HasOne(x => x.Device)
                     .WithMany(x => x.Owners)
-                    .HasForeignKey(x => x.DeviceId)
-                    .OnDelete(DeleteBehavior.Cascade);
-                e.HasOne(x => x.Owner)
-                    .WithMany(x => x.DeviceOwners)
-                    .HasForeignKey(x => x.OwnerId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            builder.Entity<DeviceConnection>(e =>
-            {
-                e.HasKey(x => x.Id);
-                e.HasOne(x => x.Device1)
-                    .WithMany(x => x.Connections1)
-                    .HasForeignKey(x => x.DeviceId1)
-                    .OnDelete(DeleteBehavior.Cascade);
-                e.HasOne(x => x.Device2)
-                    .WithMany(x => x.Connections2)
-                    .HasForeignKey(x => x.DeviceId2)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            builder.Entity<TransientCertificate>(e =>{ 
-                e.HasKey(x => x.Id);
-                e.HasOne(x => x.Referer)
-                    .WithMany(x => x.TransientRefererCertificates)
-                    .HasForeignKey(x => x.RefererId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                e.HasOne(x => x.Client)
-                    .WithMany(x => x.TransientClientCertificates)
-                    .HasForeignKey(x => x.ClientId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-            });
-
-            builder.Entity<PeerContract>(e =>{ 
-                e.HasKey(x => x.Id);
-                e.HasOne(x => x.Peer)
-                    .WithMany(x => x.PeerContracts)
-                    .HasForeignKey(x => x.PeerId)
+                    .HasForeignKey(e => e.DeviceId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            builder.Entity<AppInfo>(e =>
-            {
-                e.HasKey(x => x.Id); 
-            });
+            //Seeds data
 
-            builder.Entity<OTSSchematic>( e=>
-            {
-                e.HasKey(x => x.Id);  
-            });
+            builder.Entity<RoleAuthority>().HasData(
+                new RoleAuthority{ Id=1, AuthLevel = 0, Name = "Admin", IsDefault = false },
+                new RoleAuthority{ Id=2, AuthLevel = 50, Name = "User", IsDefault = true },
+                new RoleAuthority{ Id=3, AuthLevel = 100, Name = "Guest", IsDefault = true }
+                );
 
-            builder.Entity<OTSSchematicEditorSettings>( e=>
+            var adminAccount = new UserAccount
             {
-                e.HasKey(x => x.Id);  
-                e.HasOne(x => x.UserSettings)
-                    .WithOne(x => x.EditorSettings)
-                    .HasForeignKey<OTSSchematicEditorSettings>(x => x.Id)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
+                Id = 1,
+                UserName = "Root",
+                NormalizedUserName = "ROOT",
+                ConcurrencyStamp = Guid.NewGuid().ToString("D"),
+                Email = "",
+                NormalizedEmail = "",
+                EmailConfirmed = true,
+                SecurityStamp = Guid.NewGuid().ToString("D"),
+            };
 
-            builder.Entity<OTSSchematicTheme>( e=>
-            {
-                e.HasKey(x => x.Id);  
-            });
+            var hasher = new PasswordHasher<UserAccount>();
+            adminAccount.PasswordHash = hasher.HashPassword(adminAccount, "admin");
+            builder.Entity<UserAccount>().HasData(adminAccount);
 
+            builder.Entity<UserRole>().HasData(
+                new UserRole{ Id=1, RoleAuthorityId = 1, UserAccountId = 1, ActiveRole = true }
+                );
 
             base.OnModelCreating(builder);
         }
@@ -175,407 +104,175 @@ namespace OTSCommon.Database
         {
             if (!builder.IsConfigured)
             {
-                var connStr = _config["ConnectionStrings:OTSDb"] ??
+                var connStr = _config["ConnectionStrings:OTSServerDb"] ??
                     throw new InvalidOperationException("Unable to retrieve DB connection string.");
                 builder.UseMySQL(connStr);
             }
         }
     }
 
-    public class OTSService
+    public class OTSDbService
     {
         private OTSDbCtx DbCtx { get; set; }
 
-        public OTSService(OTSDbCtx ctx)
+        public OTSDbService(OTSDbCtx ctx)
         {
             DbCtx = ctx;
-
-            VerifyDefaultAuthorities();
         }
 
-        //User account methods
-        public int AddUser(string username, string password, RoleAuthority maxAuthority, RoleAuthority currentAuthority)
+        //User
+        public IEnumerable<UserAccount> GetUsers()
+            => DbCtx.UserAccounts;
+
+        public UserAccount? GetUser(string username)
+            => DbCtx.UserAccounts.FirstOrDefault(x => username.Equals(x.UserName, StringComparison.OrdinalIgnoreCase));
+
+        public UserAccount? GetUser(int id)
+            => DbCtx.UserAccounts.FirstOrDefault(x => x.Id == id);
+
+        //public int CreateUser(string username, string password)
+        //{
+        //    var user = new UserAccount
+        //    {
+        //        UserRoleId = roleId,
+        //    };
+
+        //    DbCtx.Add(user);
+        //    DbCtx.SaveChanges();
+        //    return user.Id;
+        //}
+
+        public UserAccount? GetUserById(int userId) =>
+            DbCtx.UserAccounts.FirstOrDefault(x => x.Id == userId);
+
+        public UserAccount? GetUserByAuthId(int authId) =>
+            DbCtx.UserAccounts.FirstOrDefault(x => x.Id == authId);
+
+        //Role Authority
+        public RoleAuthority? GetRoleAuthority(int roleAuthId) =>
+            DbCtx.RoleAuthorities.FirstOrDefault(x => x.Id == roleAuthId);
+    
+        public RoleAuthority? GetRoleAuthority(string authName) =>
+            DbCtx.RoleAuthorities.FirstOrDefault(x => x.Name.Equals(authName, StringComparison.OrdinalIgnoreCase));
+
+        public RoleAuthority? GetUserRole(int userId)
         {
-            if(DbCtx.Users.Any(x => x.ToUpperdUsername.Equals(username, StringComparison.CurrentCultureIgnoreCase)
-             && x.DeletedOn == null)) {
-                return -1;
+            var userRole = DbCtx.UserRoles.FirstOrDefault(x => x.UserAccountId == userId && x.ActiveRole);
+            if(userRole == null) { return null; }
+            return DbCtx.RoleAuthorities.FirstOrDefault(x => x.Id == userRole.RoleAuthorityId);
+        }
+
+        //First authority sets active authority
+        public bool AddUserRoles(int userId, IEnumerable<RoleAuthority> authorities)
+        {
+            bool setAsActive = GetUserRole(userId) == null;
+
+            if(!authorities.Any() &&  setAsActive == false)
+            {
+                return false;
             }
 
-            var salt = Irreversible.GenerateSalt();
-            var hash = Irreversible.CreateSaltedHash(password, salt);
-
-
-            var user = new UserAccount
+            foreach(var auth in authorities)
             {
-                Username = username,
-                ToUpperdUsername = username.ToUpper(),
-                PassHash = hash,
-                PassSalt = salt,
-                MaxAuthority = maxAuthority,
-                OperatingAuthority = currentAuthority,
-                UserSettings = UserSettings.GetDefaultSettings()
-            };
-
-            var settings = new UserSettings
-            {
-                Id = user.Id,
-                AutoSignIn = true,
-            };
-
-            user.UserSettings = settings;
-
-            DbCtx.Users.Add(user);
-            DbCtx.UserSettings.Add(settings);
-
-            DbCtx.SaveChanges();
-
-            return user?.Id ?? -1;
-        }
-
-        public UserAccount? GetUser(string username) =>
-            DbCtx.Users.FirstOrDefault(x => x.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
-        public UserAccount? GetUser(int id) => DbCtx.Users.FirstOrDefault(x => x.Id == id && x.DeletedOn == null);
-        public ICollection<UserAccount> GetUsers() => [.. DbCtx.Users.Where(x => x.DeletedOn == null)];
-
-
-        //User settings methods
-        public int AddUserSettings(int userId)
-        {
-            var user = DbCtx.Users.FirstOrDefault(x => x.Id == userId && x.DeletedOn == null);
-            if (user == default || DbCtx.UserSettings.Any(x => x.Id == userId && x.DeletedOn == null)) { return -1; }
-            
-            var settings = new UserSettings
-            {
-                Id = userId,
-                AutoSignIn = true,
-            };
-
-            DbCtx.UserSettings.Add(settings);
-
-            return settings?.Id ?? -1;
-        }
-
-
-        //Role authority methods
-        private void VerifyDefaultAuthorities()
-        {
-            var authMeta = new List<(string, int)>{ ("Guest", 100), ("Owner", 50), ("Admin", 0) };
-            List<RoleAuthority?> authTmp = [];
-
-            for(var i = 0; i < authMeta.Count; ++i)
-            {
-                var authDat = authMeta[i];
-
-                var auth = GetRoleAuthority(authDat.Item1);
-                if(auth == null)
+                var role = new UserRole
                 {
-                    var prev = i > 0 ? authTmp[i-1] : null;
+                    RoleAuthorityId = auth.Id,
+                    UserAccountId = userId,
+                    ActiveRole = setAsActive
+                };
 
-                    auth = new RoleAuthority
-                    {
-                        RoleName = authDat.Item1,
-                        AuthLevel = authDat.Item2,
-                        Downgrade = prev,
-                        DowngradeId = prev?.Id,
-                    };
+                DbCtx.UserRoles.Add(role);
 
-                    auth = DbCtx.RoleAuthorities.Add(auth).Entity;
-                } 
-
-                auth.Id = i+1;
-                authTmp.Add(auth);
+                setAsActive = false;
             }
 
             DbCtx.SaveChanges();
-        }
-
-        public bool AddRoleAuthority(string roleName, int authLevel, int? downgradeId=null)
-        {
-            if(DbCtx.RoleAuthorities.Any(x => x.RoleName.Equals(roleName, StringComparison.OrdinalIgnoreCase) && x.DeletedOn == null)) { return false; }
-            
-            var downgrade = downgradeId != null?
-                GetRoleAuthority(downgradeId.Value) : null;
-
-            var role = new RoleAuthority
-            {
-                RoleName = roleName,
-                AuthLevel = authLevel,
-                DowngradeId = downgradeId,
-                Downgrade = downgrade
-            };
-
-            DbCtx.RoleAuthorities.Add(role);
-
-            return DbCtx.SaveChanges() == 1;
-        }
-
-        public Tuple<RoleAuthority, RoleAuthority>? GetDefaultAuthorityPair()
-        {
-            var maxAuth = DbCtx.RoleAuthorities.First(x => x.RoleName.Equals("Basic"));
-            var opAuth = DbCtx.RoleAuthorities.First(x => x.RoleName.Equals("Guest"));
-
-            if(maxAuth == null || opAuth == null) { return null; }
-
-            return new Tuple<RoleAuthority, RoleAuthority>(maxAuth, opAuth);
-        }
-    
-        public RoleAuthority? GetRoleAuthority(int roleId)
-        {
-            return DbCtx.RoleAuthorities.FirstOrDefault(x => x.Id == roleId && x.DeletedOn == null);
-        }
-
-        public RoleAuthority? GetRoleAuthority(string roleName)
-        {
-            return DbCtx.RoleAuthorities.FirstOrDefault(x => x.RoleName.Equals(roleName, StringComparison.OrdinalIgnoreCase)
-                 && x.DeletedOn == null);
-        }
-
-        public List<RoleAuthority> GetRoleAuthorities()
-        {
-            return [.. DbCtx.RoleAuthorities.Where(x => x.DeletedOn == null)];
-        }
-    
-        public bool UpdateUserRole(int roleId, int userId)
-        {
-            var user = DbCtx.Users.FirstOrDefault(x => x.Id == userId && x.DeletedOn == null);
-            var role = DbCtx.RoleAuthorities.FirstOrDefault(x => x.Id == roleId && x.DeletedOn == null);
-            if (user == null || role == null || role.AuthLevel < user.MaxAuthority.AuthLevel) 
-                { return false; }
-
-            user.OperatingAuthority = role;
-            DbCtx.Users.Update(user);
-
             return true;
         }
 
-        //Sign in methods
-        public int AddSignIn(int userId)
+        //Devices
+        public List<NetworkedDevice> GetDevices()
+            => DbCtx.NetworkedDevices.ToList();
+
+        public NetworkedDevice? GetDevice(int id) =>
+            DbCtx.NetworkedDevices.FirstOrDefault(x => x.Id == id);
+
+        public NetworkedDevice? GetDevice(string deviceId) =>
+            DbCtx.NetworkedDevices.FirstOrDefault(x => deviceId.Equals(x.DeviceId, StringComparison.OrdinalIgnoreCase));
+
+        public bool DeleteDevice(int id)
         {
-            var user = DbCtx.Users.FirstOrDefault(x => x.Id == userId);
-            if (user == null) { return -1; }
-
-            var log = new SignIn
-            {
-                UserAccount = user,
-                UserId = userId,
-                SiginInDate = DateTime.UtcNow,
-            };
-
-            DbCtx.SignIns.Add(log);
-            DbCtx.SaveChanges();
-
-            return log?.Id ?? -1;
-        }
-    
-        public SignIn? GetLastSignIn()
-        {
-            return DbCtx.SignIns.OrderByDescending(x => x.SiginInDate)
-                .FirstOrDefault();
-        }
-        
-        //Device methods
-        public int AddDevice(int ownerId, IDeviceInfo deviceInfo)
-        {
-            var owner = DbCtx.Users.FirstOrDefault(x => x.Id == ownerId && x.DeletedOn == null);
-            if (owner == null || DbCtx.Devices.Any(x => x.HwId == deviceInfo.DeviceId && x.DeletedOn == null)) 
-                { return -1; }    
-
-            var device = new Device
-            {
-                HwId = deviceInfo.DeviceId,
-                DisplayName = deviceInfo.DeviceName,
-                Os = deviceInfo.OsVersion
-            };
-
-            var deviceOwner = new DeviceOwner
-            {
-                Device = device,
-                DeviceId = device.Id,
-                Owner = owner,
-                OwnerId = ownerId,
-            };
-
-            DbCtx.Devices.Add(device);
-            DbCtx.DeviceOwners.Add(deviceOwner);
-            DbCtx.SaveChanges();
-
-            return device?.Id ?? -1;
-        }
-
-        public bool DeleteDevice(string deviceId)
-        {
-            var device = DbCtx.Devices.FirstOrDefault(x => x.HwId == deviceId && x.DeletedOn == null);
+            var device = DbCtx.NetworkedDevices.FirstOrDefault(x => x.Id == id);
             if(device == null) { return false; }
 
-            device.DeletedOn = DateTime.UtcNow;
-            DbCtx.Devices.Update(device);
+            DbCtx.NetworkedDevices.Remove(device);
             DbCtx.SaveChanges();
 
             return true;
         }
-
-        public Device? GetDevice(string hwId) => 
-            DbCtx.Devices.FirstOrDefault(x => x.HwId == hwId && x.DeletedOn == null);
-        public Device? GetDevice(int id) =>
-            DbCtx.Devices.FirstOrDefault(x => x.Id == id && x.DeletedOn == null);
-
-        public ICollection<Device> GetDevices() => [.. DbCtx.Devices.Where(x => x.DeletedOn == null)];
-
-        public int AddDeviceOwner(int ownerId, int deviceId)
+            
+        public bool DeleteDevice(string deviceId)
         {
             var device = GetDevice(deviceId);
-            var owner = GetUser(ownerId);
+            if(device == null) { return false; }
 
-            if(device == null || owner == null ||
-                DbCtx.DeviceOwners.Any(x => x.DeviceId == deviceId && x.OwnerId == ownerId)
-                ) { return -1; }
-
-            var deviceOwner = new DeviceOwner
-            {
-                Device = device,
-                DeviceId = device.Id,
-                Owner = owner,
-                OwnerId = ownerId,
-            };
-
-            var t = DbCtx.DeviceOwners.Add(deviceOwner);
-            DbCtx.SaveChanges();
-
-            var all = DbCtx.DeviceOwners.ToList();
-
-            return deviceOwner?.DeviceId ?? -1;
-        }
-    
-        public ICollection<DeviceOwner> GetDeviceOwners(int deviceId ) =>
-            [.. DbCtx.DeviceOwners.Where(x => x.DeviceId == deviceId && x.DeletedOn == null)];
-    
-        public bool ConnectDevices(int device1Id, int device2Id, int requesterId)
-        {
-            var assigner = DbCtx.Users.FirstOrDefault(x => x.Id == requesterId && x.DeletedOn == null);
-            var device1 = DbCtx.Devices.FirstOrDefault(x => x.Id == device1Id && x.DeletedOn == null);
-            var device2 = DbCtx.Devices.FirstOrDefault(x => x.Id == device2Id && x.DeletedOn == null);
-
-            if(GetDeviceConnection(device1Id, device2Id) != null || assigner == null
-                || device1 == null || device2 == null) { return false; }
-
-            var connection = new DeviceConnection
-            {
-                AssignedBy = assigner,
-                AssignedById = requesterId,
-                Device1 = device1,
-                DeviceId1 = device1Id,
-                Device2 = device2,
-                DeviceId2 = device2Id,
-            };
-
-            DbCtx.DeviceConnections.Add(connection);
+            DbCtx.NetworkedDevices.Remove(device);
             DbCtx.SaveChanges();
 
             return true;
         }
-
-        public bool ConnectDevice(int peerId, string deviceId, bool isRequester, int userId, bool allowWrite)
+        
+        public bool AddDevice(int userId, IDeviceInfo info)
         {
-            var currDevice = GetDevice(deviceId)!;
-            var assignerId = isRequester ? currDevice.Id : peerId;
-            var localUser = GetUser(userId)!;
-
-            if (!ConnectDevices(peerId, currDevice.Id, assignerId) || 
-                (allowWrite && localUser.OperatingAuthority.AuthLevel > OTSConfig.AuthWriteLevel)) { return false; }
-            if(!AddPeerContract(peerId, Guid.NewGuid(), userId, allowWrite)) { return false; }
-
-            return true;
-        }
-
-        public bool DisconnectDevices(int connectionId)
-        {
-            var connection = DbCtx.DeviceConnections.FirstOrDefault(x => x.Id == connectionId);
-            if(connection == null) return false;
-
-            connection.DeletedOn = DateTime.UtcNow;
-            DbCtx.DeviceConnections.Update(connection);
-
-            DbCtx.SaveChanges();
-
-            return true;
-        }
-
-        public DeviceConnection? GetDeviceConnection(int deviceId1, int deviceId2) =>
-            DbCtx.DeviceConnections.FirstOrDefault(x => 
-                (x.DeviceId1 == deviceId1 && x.DeviceId2 == deviceId2) || 
-                (x.DeviceId1 == deviceId2 && x.DeviceId2 == deviceId1) && x.DeletedOn == null);
-       
-        public bool AddPeerContract(int peerId, Guid connectionToken, 
-            int localUserId, bool allowWrite, 
-            DateTime? expiration = null)
-        {
-            var localUser = DbCtx.Users.FirstOrDefault(x => x.Id == localUserId && x.DeletedOn == null);
-            var peerDevice = DbCtx.Devices.FirstOrDefault(x => x.Id == peerId && x.DeletedOn == null);
-            if(peerDevice == null || localUser == null) return false;
-
-            if (allowWrite && localUser.OperatingAuthority.AuthLevel > OTSConfig.AuthWriteLevel) { return false; }
-
-            var contract = new PeerContract
+            var device = DbCtx.NetworkedDevices.FirstOrDefault(x => info.DeviceId.Equals(x.DeviceId, StringComparison.OrdinalIgnoreCase));
+            if(device != null)
             {
-                Peer = peerDevice,
-                PeerId = peerId,
-                Token = connectionToken,
-                Issued = DateTime.UtcNow,
-                AllowWrite = allowWrite,
-                Expiration = expiration ?? DateTime.UtcNow.AddDays(30),
-                Authorizer = localUser,
-                AuthorizerId = localUserId,
-            };
+                return false;
+            }
             
-            DbCtx.PeerContracts.Add(contract);
-            DbCtx.SaveChanges();
+            var user = GetUser(userId);
+            if(user == null) { return false; }
 
-            return true;
-        } 
-
-        public PeerContract? GetPeerContract(int contractId) =>
-            DbCtx.PeerContracts.FirstOrDefault(x => x.Id == contractId && x.DeletedOn == null && x.Expiration > DateTime.UtcNow);
-
-        public PeerContract? GetPeerContractByDevice(int deviceId) =>
-            DbCtx.PeerContracts.FirstOrDefault(x => x.PeerId == deviceId && x.DeletedOn == null && x.Expiration > DateTime.UtcNow);
-
-        public bool AddTransientCertificate(int refererDeviceId, int clientDeviceId,
-            Guid SharedToken, DateTime? expiration=null)
-        {
-            var referer = GetDevice(refererDeviceId);
-            var client = GetDevice(clientDeviceId);
-
-            var clientContract = GetPeerContractByDevice(clientDeviceId);
-            var refererContract = GetPeerContractByDevice(refererDeviceId);
-
-            if (referer == null || client == null || 
-                clientContract == null || refererContract == null)
-                { return false; }
-
-            var certificate = new TransientCertificate
+            device = new NetworkedDevice
             {
-                Client = client,
-                ClientId = clientDeviceId,
-                Referer = referer,
-                RefererId = refererDeviceId,
-                Expiration = expiration ?? DateTime.UtcNow.AddDays(30),
-                Issued = DateTime.UtcNow,
-                SharedPeerToken = SharedToken,
+                DeviceId = info.DeviceId,
+                DeviceName = info.DeviceName,
+                OSVersion = info.OsVersion
             };
 
-            DbCtx.TransientCertificates.Add(certificate);
+            var deviceOwner = new NetworkedDeviceOwner
+            {
+                DeviceId = device.Id,
+                OwnerId = user.Id
+            };
+
+            DbCtx.NetworkedDevices.Add(device);
+            DbCtx.NetworkedDeviceOwners.Add(deviceOwner);
             DbCtx.SaveChanges();
 
             return true;
         }
-    
-        public TransientCertificate? GetTransientCertificate(int refererDeviceId, int clientDeviceId) =>
-            DbCtx.TransientCertificates.FirstOrDefault(x => x.RefererId == refererDeviceId && x.ClientId == clientDeviceId);
-    
-        
-        //Component methods
-        
 
-        //Application methods
+        public bool AddDeviceOwner(int userId, int deviceId)
+        {
+            var user = GetUser(userId);
+            var device = GetDevice(deviceId);
+
+            if(user == null || device == null) { return false; }
+
+            var deviceOwner = new NetworkedDeviceOwner
+            {
+                DeviceId= device.Id,
+                OwnerId = user.Id
+            };
+
+            DbCtx.NetworkedDeviceOwners.Add(deviceOwner);
+            DbCtx.SaveChanges();
+
+            return true;
+        }
+
+        public List<NetworkedDeviceOwner> GetDeviceOwners(int deviceId)
+            => DbCtx.NetworkedDeviceOwners.Where(x => x.DeviceId == deviceId).ToList();
     }
 }

@@ -10,7 +10,7 @@ namespace OTSTests
     public class DeviceTests
     {
         private SingleSetup _setup;
-        private OTSService _dbService;
+        private OTSDbService _dbService;
 
         private readonly string _user1 = "User1";
         private readonly string _user2 = "User2";
@@ -18,9 +18,9 @@ namespace OTSTests
         private string _deviceId;
 
         static int nameId = 1;
-        private static DeviceInfo CreateDeviceInfo()
+        private static OTSCommon.Security.DeviceInfo CreateDeviceInfo()
         {
-            var deviceMock = new Mock<DeviceInfo>();
+            var deviceMock = new Mock<OTSCommon.Security.DeviceInfo>();
             deviceMock.Setup(x => x.OsVersion).Returns("TestOs");
             deviceMock.Setup(x => x.DeviceId).Returns(Guid.NewGuid().ToString());
             deviceMock.Setup(x => x.DeviceName).Returns($"Device {nameId++}");
@@ -34,7 +34,7 @@ namespace OTSTests
         public void Setup()
         {
             OTSConfig.LoadFromDisk();
-            var realDevice = new DeviceInfo();
+            var realDevice = new OTSCommon.Security.DeviceInfo();
             _deviceId = realDevice.DeviceId;
 
             _setup = SingleSetup.GetInstance()
@@ -50,8 +50,8 @@ namespace OTSTests
 
             Assert.Multiple(() =>
             {
-                Assert.That(devices, Has.Count.EqualTo(1));
-                Assert.That(users, Has.Count.EqualTo(3));
+                Assert.That(devices.Count(), Is.EqualTo(1));
+                Assert.That(users.Count(), Is.EqualTo(3));
             });
         }
 
@@ -61,7 +61,7 @@ namespace OTSTests
             var user = _dbService.GetUser(_user1);
             Assert.That(user, Is.Not.Null);
 
-            var deviceInfo = new DeviceInfo();
+            var deviceInfo = new OTSCommon.Security.DeviceInfo();
             _dbService.DeleteDevice(deviceInfo.DeviceId);
             Assert.That(_dbService.GetDevice(deviceInfo.DeviceId), Is.Null);
             _dbService.AddDevice(user.Id, deviceInfo);
@@ -115,7 +115,7 @@ namespace OTSTests
         [Test]
         public void ConnectTransientDevices()
         {
-            var infoC = new DeviceInfo();
+            var infoC = new OTSCommon.Security.DeviceInfo();
             var infoL = CreateDeviceInfo();
             var infoR = CreateDeviceInfo();
 
