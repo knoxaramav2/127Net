@@ -12,14 +12,7 @@ namespace OTSTests.StdLibTests.Logic
     internal class ComparisonTest
     {
         private SingleSetup _setup;
-        private PluginManager _pluginManager;
-        private IOTSLibrary _providerLib;
-        private IOTSComponent _equOp;
-        private IOTSComponent _nEquOp;
-        private IOTSComponent _grtrOp;
-        private IOTSComponent _lessOp;
-        private IOTSComponent _grtrEquOp;
-        private IOTSComponent _lessEquOp;
+        private SingleSetupPlugins _plugins;
 
         [TearDown]
         public void Cleanup() { _setup.Dispose(); }
@@ -27,44 +20,45 @@ namespace OTSTests.StdLibTests.Logic
         [SetUp]
         public void Setup()
         {
-            _setup = SingleSetup.GetInstance();
-            _pluginManager = new();
-            try
-            {
-                _providerLib = _pluginManager.GetLibrary(StdLibUtils.LogicLibName)!;
-                _equOp = _providerLib.GetComponent(StdLibUtils.LogicalEqual)!;
-                _nEquOp = _providerLib.GetComponent(StdLibUtils.LogicalNotEqual)!;
-                _lessOp = _providerLib.GetComponent(StdLibUtils.LogicalLess)!;
-                _grtrOp = _providerLib.GetComponent(StdLibUtils.LogicalGreater)!;
-                _lessEquOp = _providerLib.GetComponent(StdLibUtils.LogicalLessEqual)!;
-                _grtrEquOp = _providerLib.GetComponent(StdLibUtils.LogicalGreaterEqual)!;
-
-            }
-            catch (Exception) { Assert.Fail(); }
+            _setup = SingleSetup.GetInstance()
+                .EnsurePlugins()
+                .EnsureLibrary(StdLibUtils.LogicLibName)
+                .EnsureComponent(StdLibUtils.LogicLibName, StdLibUtils.LogicalEqual)
+                .EnsureComponent(StdLibUtils.LogicLibName, StdLibUtils.LogicalNotEqual)
+                .EnsureComponent(StdLibUtils.LogicLibName, StdLibUtils.LogicalLess)
+                .EnsureComponent(StdLibUtils.LogicLibName, StdLibUtils.LogicalGreater)
+                .EnsureComponent(StdLibUtils.LogicLibName, StdLibUtils.LogicalLessEqual)
+                .EnsureComponent(StdLibUtils.LogicLibName, StdLibUtils.LogicalGreaterEqual)
+                .EndPlugins;
+             _plugins = _setup.PluginSetups!;
         }
 
-
-        #region EQUAL
-        private bool TestEquOperator(long lValue, long rValue)
+        private bool testOperator<T, U>(string componentName, T lVal, U rVal)
         {
-            var input1 = _equOp.GetInput("Input 1");
-            var input2 = _equOp.GetInput("Input 2");
-            var result = _equOp.GetOutput("Result");
+            _plugins.GetComponent(componentName, out var op);
+            var type = TypeConversion.TypeFromGeneric<T>();
 
-            input1?.Set(new OTSData(OTSTypes.SIGNED, lValue));
-            input2?.Set(new OTSData(OTSTypes.SIGNED, rValue));
-            _equOp.Update();
+            var in1 = op!.GetInput("Input 1")!;
+            var in2 = op!.GetInput("Input 2")!;
+            var result = op!.GetOutput("Result");
+
+            in1.Set(new OTSData(type, lVal));
+            in2.Set(new OTSData(type, rVal));
+            op.Update();
             var res = result?.Value?.As<bool>();
 
             return res ?? false;
         }
 
+
+        #region EQUAL
+
         [Test]
-        public void EquTest111() => Assert.That(TestEquOperator(500, 500), Is.True);
+        public void EquTest111() => Assert.That(testOperator(StdLibUtils.LogicalEqual, 500, 500), Is.True);
         [Test]
-        public void EquTest100() => Assert.That(TestEquOperator(500, 200), Is.False);
+        public void EquTest100() => Assert.That(testOperator(StdLibUtils.LogicalEqual, 500, 200), Is.False);
         [Test]
-        public void EquTest010() => Assert.That(TestEquOperator(200, 500), Is.False);
+        public void EquTest010() => Assert.That(testOperator(StdLibUtils.LogicalEqual, 200, 500), Is.False);
 
 
         #endregion
@@ -72,130 +66,60 @@ namespace OTSTests.StdLibTests.Logic
 
         #region NOT EQUAL
 
-        private bool TestNotEquOperator(string lValue, string rValue)
-        {
-            var input1 = _nEquOp.GetInput("Input 1");
-            var input2 = _nEquOp.GetInput("Input 2");
-            var result = _nEquOp.GetOutput("Result");
-
-            input1?.Set(new OTSData(OTSTypes.STRING, lValue));
-            input2?.Set(new OTSData(OTSTypes.STRING, rValue));
-            _nEquOp.Update();
-            var res = result?.Value?.As<bool>();
-
-            return res ?? false;
-        }
-
         [Test]
-        public void NotEquTest110() => Assert.That(TestNotEquOperator("Hello", "Hello"), Is.False);
+        public void NotEquTest110() => Assert.That(testOperator(StdLibUtils.LogicalNotEqual, "Hello", "Hello"), Is.False);
         [Test]
-        public void NotEquTest101() => Assert.That(TestNotEquOperator("Hello", "World"), Is.True);
+        public void NotEquTest101() => Assert.That(testOperator(StdLibUtils.LogicalNotEqual, "Hello", "World"), Is.True);
         [Test]
-        public void NotEquTest011() => Assert.That(TestNotEquOperator("World", "Hello"), Is.True);
+        public void NotEquTest011() => Assert.That(testOperator(StdLibUtils.LogicalNotEqual, "World", "Hello"), Is.True);
 
         #endregion
 
 
         #region GREATER
 
-        private bool TestGrtrOperator(long lValue, long rValue)
-        {
-            var input1 = _grtrOp.GetInput("Input 1");
-            var input2 = _grtrOp.GetInput("Input 2");
-            var result = _grtrOp.GetOutput("Result");
-
-            input1?.Set(new OTSData(OTSTypes.SIGNED, lValue));
-            input2?.Set(new OTSData(OTSTypes.SIGNED, rValue));
-            _grtrOp.Update();
-            var res = result?.Value?.As<bool>();
-
-            return res ?? false;
-        }
-
         [Test]
-        public void GtrTest110() => Assert.That(TestGrtrOperator(500, 500), Is.False);
+        public void GtrTest110() => Assert.That(testOperator(StdLibUtils.LogicalGreater, 500, 500), Is.False);
         [Test]
-        public void GtrTest101() => Assert.That(TestGrtrOperator(500, 200), Is.True);
+        public void GtrTest101() => Assert.That(testOperator(StdLibUtils.LogicalGreater, 500, 200), Is.True);
         [Test]
-        public void GtrTest010() => Assert.That(TestGrtrOperator(200, 500), Is.False);
+        public void GtrTest010() => Assert.That(testOperator(StdLibUtils.LogicalGreater, 200, 500), Is.False);
 
         #endregion
 
 
         #region LESS
 
-        private bool TestLessOperator(long lValue, long rValue)
-        {
-            var input1 = _lessOp.GetInput("Input 1");
-            var input2 = _lessOp.GetInput("Input 2");
-            var result = _lessOp.GetOutput("Result");
-
-            input1?.Set(new OTSData(OTSTypes.SIGNED, lValue));
-            input2?.Set(new OTSData(OTSTypes.SIGNED, rValue));
-            _lessOp.Update();
-            var res = result?.Value?.As<bool>();
-
-            return res ?? false;
-        }
-
         [Test]
-        public void LssTest110() => Assert.That(TestLessOperator(500, 500), Is.False);
+        public void LssTest110() => Assert.That(testOperator(StdLibUtils.LogicalLess, 500, 500), Is.False);
         [Test]
-        public void LssTest100() => Assert.That(TestLessOperator(500, 200), Is.False);
+        public void LssTest100() => Assert.That(testOperator(StdLibUtils.LogicalLess, 500, 200), Is.False);
         [Test]
-        public void LssTest011() => Assert.That(TestLessOperator(200, 500), Is.True);
+        public void LssTest011() => Assert.That(testOperator(StdLibUtils.LogicalLess, 200, 500), Is.True);
 
         #endregion
 
 
         #region GREATER EQUAL
 
-        private bool TestGrtrEquOperator(long lValue, long rValue)
-        {
-            var input1 = _grtrEquOp.GetInput("Input 1");
-            var input2 = _grtrEquOp.GetInput("Input 2");
-            var result = _grtrEquOp.GetOutput("Result");
-
-            input1?.Set(new OTSData(OTSTypes.SIGNED, lValue));
-            input2?.Set(new OTSData(OTSTypes.SIGNED, rValue));
-            _grtrEquOp.Update();
-            var res = result?.Value?.As<bool>();
-
-            return res ?? false;
-        }
-
         [Test]
-        public void GtrEquTest111() => Assert.That(TestGrtrEquOperator(500, 500), Is.True);
+        public void GtrEquTest111() => Assert.That(testOperator(StdLibUtils.LogicalGreaterEqual, 500, 500), Is.True);
         [Test]
-        public void GtrEquTest101() => Assert.That(TestGrtrEquOperator(500, 200), Is.True);
+        public void GtrEquTest101() => Assert.That(testOperator(StdLibUtils.LogicalGreaterEqual, 500, 200), Is.True);
         [Test]
-        public void GtrEquTest010() => Assert.That(TestGrtrEquOperator(200, 500), Is.False);
+        public void GtrEquTest010() => Assert.That(testOperator(StdLibUtils.LogicalGreaterEqual, 200, 500), Is.False);
 
         #endregion
 
 
         #region LESS EQUAL
 
-        private bool TestLessEquOperator(long lValue, long rValue)
-        {
-            var input1 = _lessEquOp.GetInput("Input 1");
-            var input2 = _lessEquOp.GetInput("Input 2");
-            var result = _lessEquOp.GetOutput("Result");
-
-            input1?.Set(new OTSData(OTSTypes.SIGNED, lValue));
-            input2?.Set(new OTSData(OTSTypes.SIGNED, rValue));
-            _lessEquOp.Update();
-            var res = result?.Value?.As<bool>();
-
-            return res ?? false;
-        }
-
         [Test]
-        public void LssEquTest111() => Assert.That(TestLessEquOperator(500, 500), Is.True);
+        public void LssEquTest111() => Assert.That(testOperator(StdLibUtils.LogicalLessEqual, 500, 500), Is.True);
         [Test]
-        public void LssEquTest100() => Assert.That(TestLessEquOperator(500, 200), Is.False);
+        public void LssEquTest100() => Assert.That(testOperator(StdLibUtils.LogicalLessEqual, 500, 200), Is.False);
         [Test]
-        public void LssEquTest011() => Assert.That(TestLessEquOperator(200, 500), Is.True);
+        public void LssEquTest011() => Assert.That(testOperator(StdLibUtils.LogicalLessEqual, 200, 500), Is.True);
 
         #endregion
     }

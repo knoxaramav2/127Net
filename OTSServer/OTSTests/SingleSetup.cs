@@ -86,7 +86,7 @@ namespace OTSTests
         private SingleSetup() 
         { 
             var config = new ConfigurationBuilder()
-                .AddUserSecrets<UserTests>()
+                //.AddUserSecrets<UserTests>()
                 .Build();    
             var dbOptions = new DbContextOptionsBuilder<OTSDbCtx>()
                 .UseInMemoryDatabase(databaseName: "OTS_IM")

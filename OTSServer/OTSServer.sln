@@ -29,13 +29,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B832E5C8-4170-4075-9991-FDFF6F0D626A}"
 	ProjectSection(SolutionItems) = preProject
 		copyPlugins.ps1 = copyPlugins.ps1
+		deepclean.ps1 = deepclean.ps1
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OTSServer", "OTSServer\OTSServer\OTSServer.csproj", "{908B93EE-C628-4FF5-A48C-7D6C52C08562}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSServer", "OTSServer\OTSServer\OTSServer.csproj", "{908B93EE-C628-4FF5-A48C-7D6C52C08562}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OTSServer.Client", "OTSServer\OTSServer.Client\OTSServer.Client.csproj", "{170B8527-54D1-42CE-8813-EE5C61ED618C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSServer.Client", "OTSServer\OTSServer.Client\OTSServer.Client.csproj", "{170B8527-54D1-42CE-8813-EE5C61ED618C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OTSServerAuth", "OTSServerAuth\OTSServerAuth.csproj", "{D1FC7B5A-901F-4EA3-A6FB-740DDA1F6C1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTSServerAuth", "OTSServerAuth\OTSServerAuth.csproj", "{D1FC7B5A-901F-4EA3-A6FB-740DDA1F6C1B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

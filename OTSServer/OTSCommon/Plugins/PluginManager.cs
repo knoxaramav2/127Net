@@ -32,7 +32,7 @@ namespace OTSCommon.Plugins
             DiscoverPlugins();
         }
 
-        private void PrintDirPaths(string path, int depth)
+        private static void PrintDirPaths(string path, int depth)
         {
             var directoryies = Directory.GetDirectories(path);
             var files = Directory.GetFiles(path);
@@ -127,7 +127,10 @@ namespace OTSCommon.Plugins
             
             var allAsms = AppDomain.CurrentDomain.GetAssemblies().ToArray();
 
-            var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
+            var pluginsAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(x => x.Location.Contains(PluginDirectory));
+
+            var componentTypes = pluginsAssemblies
                 .SelectMany(x => x.GetTypes())
                 .Where(x => (
                 typeof(IOTSComponentTemplate<IOTSComponent>).IsAssignableFrom(x)) && x.IsClass)

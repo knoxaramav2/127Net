@@ -1,5 +1,5 @@
 
-param([string]$config)
+param([string]$config="debug")
 
 Write-Output "Copying files for $config"
 
