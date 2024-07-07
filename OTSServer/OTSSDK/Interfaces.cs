@@ -100,7 +100,8 @@
     public interface IOTSComponentTemplate<T> : 
         IOTSComponentDefinition<IOTSInputTemplate, IOTSViewTemplate, IOTSOutputTemplate, IOTSConfigFieldTemplate>,
         IOTSTemplate<T> where T: IOTSComponent
-    {}
+    {
+    }
 
     public interface IOTSComponent 
         : IOTSObject, 

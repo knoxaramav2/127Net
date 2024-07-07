@@ -1,0 +1,82 @@
+﻿@page "/ControlBoard/LibraryExplorer"
+
+@using OTSCommon.Plugins
+@using OTSSDK
+@using OTSCommon.Models
+@using System.Text
+
+@inject IJSRuntime JSRuntime
+@inject OTSCommon.Plugins.PluginManager Plugins
+
+<h3>Discovered Libraries</h3>
+
+<div class="ots_composite_table">
+    <div class="composite_title">
+        <div class="composite_title_cell">
+            <span>Name</span>
+            <span>Description</span>
+            <span>Version</span>
+        </div>
+    </div>
+    @foreach(var lib in Libraries)
+    {
+        <div class="composite_header">
+            <div class="composite_header_cell">
+                <span>@(LegalizeName(lib.Name))</span>
+                <span>@lib.Description</span>
+                <span>@lib.Version</span>
+            </div>
+        </div>
+        <div class="composite_title">
+            <div class="composite_title_cell component_format">
+                <span>Name</span>
+                <span>Description</span>
+                <span>Expand</span>
+            </div>
+        </div>
+        @foreach(var comp in lib.Components)
+        {
+            <div class="composite_body">
+                <div class="composite_body_cell component_format">
+                    <span>@(LegalizeName(comp.Name))</span>
+                    <span>Placeholder description</span>
+                    <span class="@activeClassStr(comp.AllowExpansion)"></span>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+
+
+@code {
+    List<IOTSLibrary> Libraries = [];
+
+    protected override void OnInitialized()
+    {
+        Console.WriteLine("AFTER RENDER");
+        Libraries = Plugins.Libraries.ToList();
+        base.OnInitialized();
+    }
+
+    string LegalizeName(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return string.Empty;
+        StringBuilder newText = new StringBuilder(value.Length * 2);
+        newText.Append(value[0]);
+        for (int i = 1; i < value.Length; i++)
+        {
+            if (char.IsUpper(value[i]) && 
+                ((value[i - 1] != ' ' && !char.IsUpper(value[i - 1])) ||
+                (char.IsUpper(value[i - 1]) &&
+                i < value.Length - 1 && !char.IsUpper(value[i + 1])))
+            )
+                newText.Append(' ');
+            newText.Append(value[i]);
+        }
+        return newText.ToString();
+    }
+
+    string activeClassStr(bool isActive) => isActive ? "ots_clr_active" : "ots_clr_inactive";
+}

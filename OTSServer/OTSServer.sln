@@ -29,6 +29,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B832E5C8-4170-4075-9991-FDFF6F0D626A}"
 	ProjectSection(SolutionItems) = preProject
 		copyPlugins.ps1 = copyPlugins.ps1
+		debugutil.ps1 = debugutil.ps1
 		deepclean.ps1 = deepclean.ps1
 	EndProjectSection
 EndProject

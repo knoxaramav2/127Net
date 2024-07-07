@@ -1,0 +1,140 @@
+﻿.designer-base {
+	height: calc(100vh - 3.5rem);
+}
+
+.ots_composite_table{
+	width: 100%;
+	font-size: small;
+}
+
+.ots_composite_table .composite_title {
+	display: flex;
+	justify-content: center;
+	background: #DDD;
+}
+
+.composite_title .composite_title_cell {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+	border-bottom: #AAA solid 1px;
+}
+
+.composite_title .composite_title_cell span {
+	flex: 1;
+	text-align: center;
+	font-weight: 600;
+}
+
+.ots_composite_table .composite_header {
+	display: flex;
+	justify-content: center;
+	background: #EEEEEE;
+}
+
+.composite_header .composite_header_cell {
+	display: flex;
+	justify-content: flex-start;
+	width: 100%;
+}
+
+.composite_header .composite_header_cell span{
+	flex: 1;
+	text-align: left;
+}
+
+.composite_header .composite_header_cell span:nth-of-type(n+1) {
+	text-align: center;
+}
+
+.ots_composite_table .composite_body {
+	display: flex;
+	justify-content: center;
+}
+
+.composite_body .composite_body_cell {
+	display: flex;
+	justify-content: flex-start;
+	width: 100%;
+}
+
+.composite_body .composite_body_cell span {
+	flex: 1;
+	text-align: left;
+	margin: 2px;
+}
+
+.component_format {
+	margin: 2px;
+}
+
+.component_format:not(:nth-of-type(n+3)) {
+	display:flex;
+	flex: 1;
+	justify-content: center;
+}
+
+.component_format span:nth-of-type(n+3){
+	display: flex;
+	flex: .15;
+	justify-content: center;
+}
+
+.ots_clr_active{ background: green; }
+.ots_clr_inactive { background: #FF5733; }
+
+/* Designer CSS */
+.designer-toolbar{
+	font-size: small;
+	background: #EEE;
+	display: flex;
+}
+
+.designer-toolbar input{
+	margin-right: 5px;
+}
+
+.designer-actions{
+	display: flex;
+	flex: 1;
+}
+
+.designer-options {
+	border-left: solid 2px;
+	display: flex;
+	flex: 1;
+	justify-content: right;
+}
+
+.editor{
+	height: 100%;
+	/*display: flex;*/
+	flex-direction: row;
+	display: flex; 
+}
+
+.editor-board{
+	background: black;
+	width: 100%;
+	height: 100%;
+}
+
+.config-panel {
+	background: #EEE;
+	min-width: 20vw;
+	max-width: 40vw;
+	overflow-y: auto;
+}
+
+@media (max-width: 800px) {
+	.editor {
+		flex-direction: column;
+	}
+
+	.config-panel {
+		height: 50vh;
+		max-width: 100%;
+		width: 100%;
+		margin-top: 8px
+	}
+}

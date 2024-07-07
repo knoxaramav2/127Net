@@ -1,0 +1,44 @@
+﻿.item-tree{
+    width: 100%;
+    height: auto;
+    font-size: small;
+}
+
+.item-tree-header{
+    
+}
+
+.item-tree-body{
+
+}
+
+.item-tree-node{
+
+}
+
+.item-tree-node button{
+    /*background: none;
+    border: 0;
+    box-shadow: none;*/
+}
+
+.item-tree-group {
+    border-bottom: 1px #8E8E8E;
+    background: #AAA;
+}
+
+.item-tree-item{
+    background: #EEE;
+}
+
+.item-tree-root{
+
+}
+
+.item-tree-leaf{
+    margin-left: 20px;
+}
+
+.item-tree-leaf.item-selected{
+    background: blue;
+}

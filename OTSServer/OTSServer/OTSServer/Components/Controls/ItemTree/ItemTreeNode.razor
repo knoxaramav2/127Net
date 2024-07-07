@@ -1,0 +1,66 @@
+﻿@namespace OTSControls
+
+<div class="item-tree-node @ItemClass(Context)">
+
+    <div>
+        @if (Context.IsGroup)
+        {
+            <input type="checkbox" @bind="Context.IsCollapsed" />
+        }
+        <button @onclick="Invoke">@Context.Label</button>
+    </div>
+
+    @if(Context.Children != null)
+    {
+        <div>
+            @if (!Context.IsCollapsed)
+            {
+                foreach(var child in Context.Children)
+                {
+                    <ItemTreeNode Context="child"
+                        OnNodeSelect="OnNodeSelect"
+                        Depth="@(Depth+1)"
+                        TreeRoot="TreeRoot"/>
+                }
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public required ItemTreeNodeBase Context { get; set; }
+
+    [Parameter]
+    public required int Depth { get; set; } = 0;
+
+    [Parameter]
+    public EventCallback<ItemTreeNodeBase> OnNodeSelect { get; set; }
+
+    public class ItemTreeNodeBase
+    {
+        public string NodeId { get; set; } = "";
+        public string Label { get; set; } = "";
+        public bool IsCollapsed { get; set; } = true;
+        public bool IsSelected { get; set; }
+        public bool IsGroup => Children != null;
+
+        public List<ItemTreeNodeBase>? Children = null;
+    }
+
+    public string ItemClass(ItemTreeNodeBase item)
+        =>  (item.Children == null ? "item-tree-item" : "item-tree-group") + " " +
+            (Depth == 0 ? "item-tree-root" : "item-tree-leaf") + " " +
+            (item.IsSelected ? "item-selected" : "");
+
+    private void Invoke()
+    {
+        TreeRoot.Selected = Context;
+        OnNodeSelect.InvokeAsync(Context);
+    }
+
+    [Parameter, EditorRequired]
+    public required ItemTree TreeRoot { get; set; }
+
+    
+}

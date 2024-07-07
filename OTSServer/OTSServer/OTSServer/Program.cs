@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OTSCommon.Database;
 using OTSCommon.Models;
+using OTSCommon.Plugins;
 using OTSCommon.Security;
 using OTSServer.Client.Pages;
 using OTSServer.Components;
@@ -41,6 +42,7 @@ builder.Services.AddIdentityCore<UserAccount>(options => options.SignIn.RequireC
     .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<OTSAuthenticate>();
+builder.Services.AddScoped<PluginManager>();
 
 //builder.Services.AddSingleton<IEmailSender<UserAuthAccount>, IdentityNoOpEmailSender>();
 

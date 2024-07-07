@@ -7,7 +7,13 @@ $binDirectories = Get-ChildItem -Path $rootDirectory -Recurse -Directory -Filter
 # Loop through each 'bin' directory and remove it
 foreach ($binDir in $binDirectories) {
     try {
-        Remove-Item -Path $binDir.FullName -Recurse -Force
+
+        $contents = Get-ChildItem -Path $binDir.FullName
+        foreach ($item in $contents) {
+            Remove-Item -Path $item.FullName -Recurse -Force
+        }
+        
+        #Remove-Item -Path $binDir.FullName -Recurse -Force
         Write-Host "Deleted: $($binDir.FullName)"
     } catch {
         Write-Host "Failed to delete: $($binDir.FullName) - $_"

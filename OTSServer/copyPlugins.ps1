@@ -13,7 +13,7 @@ $directories = @(
 )
 
 # Define the target directory where .dll files will be copied
-$serverDirectory = "OTSServer\bin\$config\net8.0\plugins"
+$serverDirectory = "OTSServer\OTSServer\bin\$config\net8.0\plugins"
 $testsDirectory = "OTSTests\bin\$config\net8.0\plugins"
 
 # Create the target directory if it doesn't exist

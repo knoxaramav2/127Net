@@ -1,0 +1,56 @@
+﻿@namespace OTSControls
+@using static OTSControls.ItemTreeNode
+
+
+<div class="item-tree">
+    @if(TreeName != null)
+    {
+        <div class="item-tree-header">
+            <h5>@TreeName</h5>
+        </div>
+    }
+
+    @if(Selected != null)
+    {
+        <span>Selected @Selected.Label</span>
+    }
+
+    <div class="item-tree-body">
+        @foreach(var item in Items)
+        {
+            <ItemTreeNode Context="item" OnNodeSelect="OnNodeSelect" TreeRoot="this"/>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<ItemTreeNodeBase> Items { get; set; } = [];
+    [Parameter]
+    public EventCallback<ItemTreeNodeBase> OnNodeSelect { get; set; }
+    [Parameter]
+    public string? TreeName { get; set; }
+
+    private ItemTreeNodeBase? _selected;
+    public ItemTreeNodeBase? Selected
+    {
+        get
+        {
+            return _selected;
+        }
+
+        set
+        {
+            if(value == null || value.Children != null) { return; }
+
+            if (_selected != null && _selected != value)
+            {
+                _selected.IsSelected = false;
+            }
+
+            _selected = value;
+            if (_selected != null) { _selected.IsSelected = true; } 
+        }
+    }
+
+}
