@@ -33,7 +33,7 @@ namespace OTSTests.StdLibTests.Logic
              _plugins = _setup.PluginSetups!;
         }
 
-        private bool testOperator<T, U>(string componentName, T lVal, U rVal)
+        private bool TestOperator<T, U>(string componentName, T lVal, U rVal)
         {
             _plugins.GetComponent(componentName, out var op);
             var type = TypeConversion.TypeFromGeneric<T>();
@@ -54,11 +54,11 @@ namespace OTSTests.StdLibTests.Logic
         #region EQUAL
 
         [Test]
-        public void EquTest111() => Assert.That(testOperator(StdLibUtils.LogicalEqual, 500, 500), Is.True);
+        public void EquTest111() => Assert.That(TestOperator(StdLibUtils.LogicalEqual, 500, 500), Is.True);
         [Test]
-        public void EquTest100() => Assert.That(testOperator(StdLibUtils.LogicalEqual, 500, 200), Is.False);
+        public void EquTest100() => Assert.That(TestOperator(StdLibUtils.LogicalEqual, 500, 200), Is.False);
         [Test]
-        public void EquTest010() => Assert.That(testOperator(StdLibUtils.LogicalEqual, 200, 500), Is.False);
+        public void EquTest010() => Assert.That(TestOperator(StdLibUtils.LogicalEqual, 200, 500), Is.False);
 
 
         #endregion
@@ -67,11 +67,11 @@ namespace OTSTests.StdLibTests.Logic
         #region NOT EQUAL
 
         [Test]
-        public void NotEquTest110() => Assert.That(testOperator(StdLibUtils.LogicalNotEqual, "Hello", "Hello"), Is.False);
+        public void NotEquTest110() => Assert.That(TestOperator(StdLibUtils.LogicalNotEqual, "Hello", "Hello"), Is.False);
         [Test]
-        public void NotEquTest101() => Assert.That(testOperator(StdLibUtils.LogicalNotEqual, "Hello", "World"), Is.True);
+        public void NotEquTest101() => Assert.That(TestOperator(StdLibUtils.LogicalNotEqual, "Hello", "World"), Is.True);
         [Test]
-        public void NotEquTest011() => Assert.That(testOperator(StdLibUtils.LogicalNotEqual, "World", "Hello"), Is.True);
+        public void NotEquTest011() => Assert.That(TestOperator(StdLibUtils.LogicalNotEqual, "World", "Hello"), Is.True);
 
         #endregion
 
@@ -79,11 +79,11 @@ namespace OTSTests.StdLibTests.Logic
         #region GREATER
 
         [Test]
-        public void GtrTest110() => Assert.That(testOperator(StdLibUtils.LogicalGreater, 500, 500), Is.False);
+        public void GtrTest110() => Assert.That(TestOperator(StdLibUtils.LogicalGreater, 500, 500), Is.False);
         [Test]
-        public void GtrTest101() => Assert.That(testOperator(StdLibUtils.LogicalGreater, 500, 200), Is.True);
+        public void GtrTest101() => Assert.That(TestOperator(StdLibUtils.LogicalGreater, 500, 200), Is.True);
         [Test]
-        public void GtrTest010() => Assert.That(testOperator(StdLibUtils.LogicalGreater, 200, 500), Is.False);
+        public void GtrTest010() => Assert.That(TestOperator(StdLibUtils.LogicalGreater, 200, 500), Is.False);
 
         #endregion
 
@@ -91,11 +91,11 @@ namespace OTSTests.StdLibTests.Logic
         #region LESS
 
         [Test]
-        public void LssTest110() => Assert.That(testOperator(StdLibUtils.LogicalLess, 500, 500), Is.False);
+        public void LssTest110() => Assert.That(TestOperator(StdLibUtils.LogicalLess, 500, 500), Is.False);
         [Test]
-        public void LssTest100() => Assert.That(testOperator(StdLibUtils.LogicalLess, 500, 200), Is.False);
+        public void LssTest100() => Assert.That(TestOperator(StdLibUtils.LogicalLess, 500, 200), Is.False);
         [Test]
-        public void LssTest011() => Assert.That(testOperator(StdLibUtils.LogicalLess, 200, 500), Is.True);
+        public void LssTest011() => Assert.That(TestOperator(StdLibUtils.LogicalLess, 200, 500), Is.True);
 
         #endregion
 
@@ -103,11 +103,11 @@ namespace OTSTests.StdLibTests.Logic
         #region GREATER EQUAL
 
         [Test]
-        public void GtrEquTest111() => Assert.That(testOperator(StdLibUtils.LogicalGreaterEqual, 500, 500), Is.True);
+        public void GtrEquTest111() => Assert.That(TestOperator(StdLibUtils.LogicalGreaterEqual, 500, 500), Is.True);
         [Test]
-        public void GtrEquTest101() => Assert.That(testOperator(StdLibUtils.LogicalGreaterEqual, 500, 200), Is.True);
+        public void GtrEquTest101() => Assert.That(TestOperator(StdLibUtils.LogicalGreaterEqual, 500, 200), Is.True);
         [Test]
-        public void GtrEquTest010() => Assert.That(testOperator(StdLibUtils.LogicalGreaterEqual, 200, 500), Is.False);
+        public void GtrEquTest010() => Assert.That(TestOperator(StdLibUtils.LogicalGreaterEqual, 200, 500), Is.False);
 
         #endregion
 
@@ -115,11 +115,11 @@ namespace OTSTests.StdLibTests.Logic
         #region LESS EQUAL
 
         [Test]
-        public void LssEquTest111() => Assert.That(testOperator(StdLibUtils.LogicalLessEqual, 500, 500), Is.True);
+        public void LssEquTest111() => Assert.That(TestOperator(StdLibUtils.LogicalLessEqual, 500, 500), Is.True);
         [Test]
-        public void LssEquTest100() => Assert.That(testOperator(StdLibUtils.LogicalLessEqual, 500, 200), Is.False);
+        public void LssEquTest100() => Assert.That(TestOperator(StdLibUtils.LogicalLessEqual, 500, 200), Is.False);
         [Test]
-        public void LssEquTest011() => Assert.That(testOperator(StdLibUtils.LogicalLessEqual, 200, 500), Is.True);
+        public void LssEquTest011() => Assert.That(TestOperator(StdLibUtils.LogicalLessEqual, 200, 500), Is.True);
 
         #endregion
     }

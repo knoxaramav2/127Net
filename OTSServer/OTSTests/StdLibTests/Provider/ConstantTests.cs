@@ -42,7 +42,7 @@ namespace OTSTests.StdLibTests.Provider
             _setupPlugins.GetComponent(componentName, out var cfg);
             cfg!.GetConfig("Value")?.Set(new OTSData(type, testVal));
             cfg.Update();
-            var res = cfg.GetOutput("Result")!.Value!.As<T>();
+            var res = cfg.GetOutput("Value")!.Value!.As<T>();
 
             return res;
         }

@@ -1,14 +1,17 @@
-﻿namespace OTSSDK
+﻿using System.Diagnostics.Contracts;
+
+namespace OTSSDK
 {
     #region Core OTS Definitions
 
     public interface IOTSBase
     {
         Guid ID { get; }
-        public string Name { get; }
+        Guid ParentId { get; set; }
+        string Name { get; }
     }
 
-    public interface IOTSTemplate<T> : IOTSBase
+    public interface IOTSTemplate<out T> : IOTSBase
     {
         T CreateInstance();
     }
@@ -97,7 +100,7 @@
         Lazy<OTSComponentClass> ComponentClass { get; }
     }
 
-    public interface IOTSComponentTemplate<T> : 
+    public interface IOTSComponentTemplate<out T> : 
         IOTSComponentDefinition<IOTSInputTemplate, IOTSViewTemplate, IOTSOutputTemplate, IOTSConfigFieldTemplate>,
         IOTSTemplate<T> where T: IOTSComponent
     {
@@ -118,17 +121,51 @@
 
     #endregion
 
+    #region Monitor
+
+    public interface IOTSMonitorDefinition : IOTSObject 
+    { 
+        
+    }
+
+    public interface IOTSMonitorTemplate :
+        IOTSComponentTemplate<IOTSMonitor>,
+        IOTSMonitorDefinition
+    { }
+
+    public interface IOTSMonitor : IOTSComponent, IOTSMonitorDefinition
+    {
+
+    }
+
+    #endregion
+
+    #region Provider
+
+    public interface IOTSProviderDefinition : IOTSObject 
+    { 
+        
+    }
+
+    public interface IOTSProviderTemplate :
+        IOTSComponentTemplate<IOTSProvider>,
+        IOTSProviderDefinition
+    { }
+
+    public interface IOTSProvider : IOTSComponent, IOTSProviderDefinition
+    {
+
+    }
+
+    #endregion
 
     #region IO Nodes
 
     public interface IOTSIONodeDefinition : IOTSObject
     {
-        //Guid NodeId { get; }
-        Guid ComponentId { get; }
         OTSTypes OTSType { get; }
         IOTSData? Value { get; set; }
     }
-
 
     public interface IOTSInputDefinition : IOTSIONodeDefinition { }
     public interface IOTSInputTemplate:
@@ -140,6 +177,7 @@
     {
         void Set(IOTSData? data);
         IOTSData? Peak();
+        IOTSLink? Link { get; }
     }
 
     public interface IOTSViewDefinition : IOTSInputDefinition 
@@ -162,6 +200,7 @@
     public interface IOTSOutput : 
         IOTSOutputDefinition
     {
+        IEnumerable<IOTSLink> Links { get; }
     }
 
     #endregion
@@ -172,6 +211,8 @@
          * Push value from provider to receiver
          * Leak result as output
          */
+        public IOTSInput Input { get; }
+        public IOTSOutput Output { get; }
         public IOTSData? Propogate();
     }
 

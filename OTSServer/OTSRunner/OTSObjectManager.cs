@@ -24,9 +24,9 @@ namespace OTSRunner
     public class OTSObjectManager : IObjectStore
     {
 
-        private Dictionary<Guid, IOTSComponent> Components = [];
-        private List<((Guid, Guid), OTSLink)> Links = [];
-        private List<(IOTSComponent, List<IOTSLink>)> LinkGroups = [];
+        private readonly Dictionary<Guid, IOTSComponent> Components = [];
+        private readonly List<((Guid, Guid), OTSLink)> Links = [];
+        private readonly List<(IOTSComponent, List<IOTSLink>)> LinkGroups = [];
 
         public bool AddComponent(IOTSComponent component)
         {
@@ -114,8 +114,8 @@ namespace OTSRunner
 
             //Collect middle circuit links
             var middleLinks = Links.Where(x => 
-                middleNodes.Any(y => y.ID == x.Item2.Input.ComponentId) && 
-                middleNodes.Any(y => y.ID == x.Item2.Output.ComponentId)
+                middleNodes.Any(y => y.ID == x.Item2.Input.ParentId) && 
+                middleNodes.Any(y => y.ID == x.Item2.Output.ParentId)
                 );
 
             //Revisit and inflate each node
@@ -139,7 +139,7 @@ namespace OTSRunner
             {
                 //var links = Links.Where(x => x.Item2.Input.ComponentId == node.ID);
                 //tmpLinks.AddRange(links);
-                var links = Links.Where(x => x.Item2.Input.ComponentId == node.ID)
+                var links = Links.Where(x => x.Item2.Input.ParentId == node.ID)
                     .Select(x => x.Item2)
                     .Cast<IOTSLink>()
                     .ToList();
@@ -149,8 +149,8 @@ namespace OTSRunner
 
         private IEnumerable<IOTSComponent> GetInputNodes(IOTSComponent node, List<IOTSComponent> middleNodes)
         {
-            var subLinks = Links.Where(x => x.Item2.Input.ComponentId == node.ID);
-            var inputs = middleNodes.Where(x => subLinks.Any(y => y.Item2.Output.ComponentId == x.ID));
+            var subLinks = Links.Where(x => x.Item2.Input.ParentId == node.ID);
+            var inputs = middleNodes.Where(x => subLinks.Any(y => y.Item2.Output.ParentId == x.ID));
             return inputs;
         }
 

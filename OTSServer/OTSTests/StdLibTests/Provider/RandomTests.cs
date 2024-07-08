@@ -36,7 +36,7 @@ namespace OTSTests.StdLibTests.Provider
             cfg!.GetConfig("MinValue")?.Set(new OTSData(type, min));
             cfg!.GetConfig("MaxValue")?.Set(new OTSData(type, max));
             cfg.Update();
-            var res = cfg.GetOutput("Result")!.Value!.As<T>();
+            var res = cfg.GetOutput("Value")!.Value!.As<T>();
 
             return res;
         }

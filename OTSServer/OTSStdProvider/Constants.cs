@@ -9,32 +9,51 @@ using System.Threading.Tasks;
 namespace OTSStdProvider
 {
     public class OTSConstantProviderTemplate(string name, Guid libGuid, OTSTypes type) : 
-        OTSProviderTemplate(name, libGuid)
+        ProviderComponentTemplateBase(name, libGuid, 
+            [new OTSOutputTemplate("Value", type)], 
+            [new OTSConfigFieldTemplate("Value", type, Guid.Empty, editLock: EditLock.Unlocked)]
+            )
     {
-        public override IOTSComponent CreateInstance()
+        public override OTSConstantProvider CreateInstance()
         {
-            return new OTSConstantProvider(Name, LibraryGuid, type);
+            return new OTSConstantProvider(this);
         }
     }
 
-    public class OTSConstantProvider : OTSProviderBase
+    public class OTSConstantProvider : ProviderComponentBase
     {
-        public IOTSConfigField ValueConfig { get; set; }
+        IOTSConfigField ConfigValue { get; }
+        IOTSOutput Output { get; }
 
-        public OTSConstantProvider(string name, Guid libGuid, OTSTypes type) :
-            base(name, libGuid, type)
+        public OTSConstantProvider(OTSConstantProviderTemplate template) : 
+            base(template)
         {
-            ValueConfig = new OTSConfigField("Value", type);
-            Fields = [ValueConfig];
-            
+            ConfigValue = Fields.First();
+            Output = Outputs.First();
         }
 
         public override void Update()
         {
-            var value = TypeConversion.EnsureValue(ValueConfig.Get(), OTSType);
-            
-            Output.Value = value;
-            Value = value;
+            Output.Value = ConfigValue.Get();
         }
+    }
+
+    public static class OTSConstantTemplates
+    {
+        public static OTSConstantProviderTemplate Signed(Guid libGuid) =>
+            new (StdLibUtils.ProvidersConstSigned, libGuid, OTSTypes.SIGNED);
+        public static OTSConstantProviderTemplate Unsigned(Guid libGuid) =>
+            new (StdLibUtils.ProvidersConstUnsigned, libGuid, OTSTypes.UNSIGNED);
+        public static OTSConstantProviderTemplate Decimal(Guid libGuid) =>
+            new (StdLibUtils.ProvidersConstDecimal, libGuid, OTSTypes.DECIMAL);
+        public static OTSConstantProviderTemplate Bool(Guid libGuid) =>
+            new (StdLibUtils.ProvidersConstBool, libGuid, OTSTypes.BOOL);
+        public static OTSConstantProviderTemplate String(Guid libGuid) =>
+            new (StdLibUtils.ProvidersConstString, libGuid, OTSTypes.STRING);
+        public static OTSConstantProviderTemplate Map(Guid libGuid) =>
+            new (StdLibUtils.ProvidersConstMap, libGuid, OTSTypes.MAP);
+        public static OTSConstantProviderTemplate List(Guid libGuid) =>
+            new (StdLibUtils.ProvidersConstList, libGuid, OTSTypes.LIST);
+
     }
 }

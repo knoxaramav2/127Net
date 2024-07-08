@@ -8,42 +8,55 @@ using System.Threading.Tasks;
 
 namespace OTSStdProvider
 {
-    public class OTSRandomProviderTemplate<T>(string name, Guid libGuid, OTSTypes type, Func<T, T, IOTSData> randomFunc) : 
-        OTSProviderTemplate(name, libGuid)
-        where T : INumber<T>
+    public class OTSRandomProviderTemplate<T>(string name, Guid libGuid, OTSTypes type, Func<T, T, IOTSData> proc) : 
+        ProviderComponentTemplateBase(name, libGuid, 
+            [new OTSOutputTemplate("Value", type)], 
+            [
+                new OTSConfigFieldTemplate("MinValue", type, Guid.Empty, editLock: EditLock.Unlocked),
+                new OTSConfigFieldTemplate("MaxValue", type, Guid.Empty, editLock: EditLock.Unlocked),
+            ]
+            )
     {
-        public override IOTSComponent CreateInstance()
+        public override OTSRandomProvider<T> CreateInstance()
         {
-            return new OTSRandomProvider<T>(Name, LibraryGuid, type, randomFunc);
+            return new(this, proc);
         }
+
     }
 
-    public class OTSRandomProvider<T> : OTSProviderBase
-        where T : INumber<T>
+    public class OTSRandomProvider<T> : ProviderComponentBase
     {
-        protected IOTSConfigField MinConfig { get; set; }
-        protected IOTSConfigField MaxConfig { get; set; }
-        private Func<T, T, IOTSData> UpdateFunc { get; set; }
+        IOTSConfigField MinVal { get; }
+        IOTSConfigField MaxVal { get; }
+        IOTSOutput Output { get; }
 
-        public OTSRandomProvider(string name, Guid libGuid, OTSTypes type, Func<T, T, IOTSData> updateFunc) :
-            base(name, libGuid, type)
+        Func<T, T, IOTSData> UpdateProc { get; }
+
+        public OTSRandomProvider(OTSRandomProviderTemplate<T> template, Func<T, T, IOTSData> proc) : 
+            base(template)
         {
-            MinConfig = new OTSConfigField("MinValue", type);
-            MaxConfig = new OTSConfigField("MaxValue", type);
-
-            Fields = [MinConfig, MaxConfig];
-
-            UpdateFunc = updateFunc;
+            MinVal = Fields.First(x => x.Name.Equals("MinValue", StringComparison.OrdinalIgnoreCase));
+            MaxVal = Fields.First(x => x.Name.Equals("MaxValue", StringComparison.OrdinalIgnoreCase));
+            Output = Outputs.First();
+            UpdateProc = proc;
         }
 
         public override void Update()
         {
-            var minVal = TypeConversion.EnsureValue(MinConfig.Get(), OTSType).As<T>();
-            var maxVal = TypeConversion.EnsureValue(MaxConfig.Get(), OTSType).As<T>();
-            Output.Value = UpdateFunc(minVal!, maxVal!);
+            Output.Value = UpdateProc.Invoke(
+                MinVal.Get()!.As<T>()!, 
+                MaxVal.Get()!.As<T>()!);
         }
     }
 
-    #region SIGNED RANDOM
-    #endregion
+    public static class OTSRandomTemplates
+    {
+        public static OTSRandomProviderTemplate<long> Signed(Guid libGuid) =>
+            new (StdLibUtils.ProvidersRandomSigned, libGuid, OTSTypes.SIGNED, 
+                (long min, long max) => new OTSData(OTSTypes.SIGNED, new Random().NextInt64(min, max)));
+
+        public static OTSRandomProviderTemplate<double> Decimal(Guid libGuid) =>
+            new (StdLibUtils.ProvidersRandomSigned, libGuid, OTSTypes.SIGNED, 
+                (double min, double max) => new OTSData(OTSTypes.DECIMAL, new Random().NextDouble() * (max-min) + min));
+    }
 }

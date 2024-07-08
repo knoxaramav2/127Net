@@ -19,11 +19,17 @@ namespace OTSPluginMath
 
         public OTSMathLib()
         {
+            var addition = new OTSMathBinaryTemplate(StdLibUtils.MathAddition, ID, (OTSData? i1, OTSData? i2) 
+                => (i1??new OTSData()) + (i2??new OTSData()));
+            var subtraction = new OTSMathBinaryTemplate(StdLibUtils.MathSubtraction, ID, (OTSData? i1, OTSData? i2) 
+                => (i1??new OTSData()) - (i2??new OTSData()));
+            var multiply = new OTSMathBinaryTemplate(StdLibUtils.MathMultiplication, ID, (OTSData? i1, OTSData? i2) 
+                => (i1??new OTSData()) * (i2??new OTSData()));
+            var divide = new OTSMathBinaryTemplate(StdLibUtils.MathDivision, ID, (OTSData? i1, OTSData? i2) 
+                => (i1??new OTSData()) / (i2??new OTSData()));
+
             Components = [
-                new OTSMathAdditionTemplate(ID),
-                new OTSMathSubtractionTemplate(ID),
-                new OTSMathMultiplicationTemplate(ID),
-                new OTSMathDivisionTemplate(ID),
+                addition, subtraction, multiply, divide
             ];
         }
     }

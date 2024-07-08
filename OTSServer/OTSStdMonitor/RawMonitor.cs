@@ -7,26 +7,13 @@ using System.Threading.Tasks;
 
 namespace OTSStdMonitor
 {
-    public class RawMonitorTemplate(Guid libGuid) : OTSMonitorTemplate<IOTSComponent>(StdLibUtils.RawMonitor, libGuid, true)
+    public class RawMonitorTemplate(Guid libGuid) : OTSMonitorTemplate<IOTSMonitor>(StdLibUtils.RawMonitor, libGuid)
     {
-        public override RawMonitor CreateInstance() => new (Name, LibraryGuid);
+        public override RawMonitor CreateInstance() => new (this);
         
     }
 
-    public class RawMonitor(string name, Guid libGuid) : OTSMonitor(name, libGuid, true)
+    public class RawMonitor(RawMonitorTemplate template) : OTSMonitor(template)
     {
-
-    }
-
-    public class RawInfoField(string name, OTSTypes type, bool visibility=true) : OTSConfigField(name, type, visibility)
-    {
-        //private IOTSData? Value { get; set; } = new OTSData(type);
-
-        public override void Set(IOTSData? data)
-        {
-            Value = data;
-        }
-
-        public override IOTSData? Get() =>  new OTSData(OTSType, Value);
     }
 }

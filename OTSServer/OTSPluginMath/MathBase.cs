@@ -7,29 +7,43 @@ using System.Threading.Tasks;
 
 namespace OTSStdMath
 {
-    public abstract class OTSMathTemplate(string name, Guid libGuid) :
-        OTSComponentTemplate<IOTSComponent>(name, libGuid, false)
+    public class OTSMathBinaryTemplate(string name, Guid libGuid, Func<OTSData?, OTSData?, OTSData> operation) :
+        OTSComponentTemplate<IOTSComponent>(name, libGuid,
+            [
+                new OTSInputTemplate("Input 1", OTSTypes.SIGNED),
+                new OTSInputTemplate("Input 2", OTSTypes.SIGNED),
+            ],
+            [ new OTSOutputTemplate("Result", OTSTypes.SIGNED) ],
+            [],
+            false)
     {
+        internal Func<OTSData?, OTSData?, OTSData> Operation = operation;
+
+        public override OTSMathBinaryComponent CreateInstance()
+        {
+            return new (this, Operation);
+        }
 
     }
 
-    public abstract class OTSMathBase : OTSComponent
+    public abstract class OTSMathBase(OTSMathBinaryTemplate template, Func<OTSData?, OTSData?, OTSData> operation) : OTSComponent(template)
     {
-        protected IOTSInput Input1 { get; set; }
-        protected IOTSInput Input2 { get; set; }
-        protected IOTSOutput Output { get; set; }
-        protected Func<OTSData?, OTSData?, OTSData> UpdateOperation { get; }
+        protected Func<OTSData?, OTSData?, OTSData> UpdateOperation { get; } = operation;
+    }
 
-        public OTSMathBase(string name, Guid libGuid, Func<OTSData?, OTSData?, OTSData> operation) : base(name, libGuid)
+    public class OTSMathBinaryComponent : OTSMathBase
+    {
+        public IOTSInput Input1 { get; set; }
+        public IOTSInput Input2 { get; set; }
+        public IOTSOutput Output { get; set; }
+
+        public OTSMathBinaryComponent(OTSMathBinaryTemplate template,
+            Func<OTSData?, OTSData?, OTSData> operation
+            ) : base(template, operation)
         {
-            Input1 = new OTSInput("Input 1", ID);
-            Input2 = new OTSInput("Input 2", ID);
-            Output = new OTSOutput("Result", ID, OTSTypes.SIGNED);
-
-            Inputs = [Input1, Input2];
-            Outputs = [Output];
-
-            UpdateOperation = operation;
+            Input1 = Inputs.First();
+            Input2 = Inputs.Last();
+            Output = Outputs.First();
         }
 
         public override void Update()

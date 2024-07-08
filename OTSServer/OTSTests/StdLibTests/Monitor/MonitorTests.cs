@@ -8,7 +8,7 @@ namespace OTSTests.StdLibTests.Monitor
     internal class MonitorTests
     {
         private SingleSetup _setup;
-        private SingleSetupPlugins _setupPlugins;
+        //private SingleSetupPlugins _setupPlugins;
         private OTSObjectManager _manager;
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private IOTSComponent _monitor;
@@ -44,14 +44,14 @@ namespace OTSTests.StdLibTests.Monitor
             _manager.AddComponent(_monitor);
             _manager.AddComponent(_boolProvider);
             _manager.AddComponent(_signedProvider);
-            _manager.LinkComponent(_boolProvider.GetOutput("Result")!, _monitor);
-            _manager.LinkComponent(_signedProvider.GetOutput("Result")!, _monitor);
+            _manager.LinkComponent(_boolProvider.GetOutput("Value")!, _monitor);
+            _manager.LinkComponent(_signedProvider.GetOutput("Value")!, _monitor);
             _manager.BuildLinkOrder();
 
-            _setupPlugins = _setup.PluginSetups!;
+            //_setupPlugins = _setup.PluginSetups!;
         }
 
-        public bool SetAndReturnBoolMonitorValue(bool value)
+        private bool SetAndReturnBoolMonitorValue(bool value)
         {
             _boolProvider.GetConfig("Value")!.Set(new OTSData(OTSTypes.BOOL, value));
             _manager.PropgateSignals();

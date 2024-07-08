@@ -7,29 +7,40 @@ using System.Threading.Tasks;
 
 namespace OTStdLogic
 {
-    public abstract class OTSLogicalTemplate(string name, Guid libGuid) :
-        OTSComponentTemplate<IOTSComponent>(name, libGuid, false)
+    public class OTSLogicalBinaryTemplate(string name, Guid libGuid, Func<OTSData?, OTSData?, OTSData> operation) :
+        OTSComponentTemplate<IOTSComponent>(name, libGuid,
+            [
+                new OTSInputTemplate("Input 1", OTSTypes.SIGNED),
+                new OTSInputTemplate("Input 2", OTSTypes.SIGNED),
+            ],
+            [ new OTSOutputTemplate("Result", OTSTypes.SIGNED) ],
+            [],
+            false)
     {
+        internal Func<OTSData?, OTSData?, OTSData> Operation = operation;
+
+        public override OTSLogicalBinaryBase CreateInstance()
+        {
+            return new (this, Operation);
+        }
 
     }
 
-    public abstract class OTSLogicalBase : OTSComponent
+    public class OTSLogicalBinaryBase : OTSComponent
     {
-        protected IOTSInput Input1 { get; set; }
-        protected IOTSInput Input2 { get; set; }
-        protected IOTSOutput Output { get; set; }
-        protected Func<OTSData?, OTSData?, bool> UpdateOperation { get; }
+        public IOTSInput Input1 { get; set; }
+        public IOTSInput Input2 { get; set; }
+        public IOTSOutput Output { get; set; }
+        protected Func<OTSData?, OTSData?, OTSData> UpdateOperation { get; }
 
-        public OTSLogicalBase(string name, Guid libGuid, Func<OTSData?, OTSData?, bool> operation) : base(name, libGuid)
+        public OTSLogicalBinaryBase(OTSLogicalBinaryTemplate template,
+            Func<OTSData?, OTSData?, OTSData> operation
+            ) : base(template)
         {
-            Input1 = new OTSInput("Input 1", ID);
-            Input2 = new OTSInput("Input 2", ID);
-            Output = new OTSLogicalOutput("Result", ID);
-
-            Inputs = [Input1, Input2];
-            Outputs = [Output];
-
             UpdateOperation = operation;
+            Input1 = Inputs.First();
+            Input2 = Inputs.Last();
+            Output = Outputs.First();
         }
 
         public override void Update()
@@ -37,14 +48,7 @@ namespace OTStdLogic
             var result = UpdateOperation.Invoke(
                 (OTSData?)Input1.Value,
                 (OTSData?)Input2.Value);
-            var temp = new OTSData(OTSTypes.BOOL, result);
-            Output.Value = temp;
+            Output.Value = result;
         }
-    }
-
-    public class OTSLogicalOutput(string name, Guid libraryId) :
-        OTSOutput(name, libraryId, OTSTypes.BOOL)
-    {
-
     }
 }

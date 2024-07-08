@@ -4,11 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using OTSCommon.Database;
 using OTSCommon.Models;
 using OTSCommon.Plugins;
-using OTSCommon.Security;
-using OTSServer.Client.Pages;
 using OTSServer.Components;
 using OTSServer.Components.Account;
-using OTSServer.Data;
 using OTSServerAuth;
 
 var builder = WebApplication.CreateBuilder(args);

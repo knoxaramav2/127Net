@@ -10,27 +10,28 @@ namespace OTSSDK
 {
     #region Core OTS
 
-    public class OTSBase(string name) : IOTSBase
+    public class OTSBase(string name, Guid parentId) : IOTSBase
     {
         public Guid ID { get; } = Guid.NewGuid();
+        public Guid ParentId { get; set; } = parentId;
         public string Name { get; } = name;
     }
 
-    public abstract class OTSTemplateBase<T>(string name) 
-        : OTSBase(name), IOTSTemplate<T>
+    public abstract class OTSTemplateBase<T>(string name, Guid libraryId) 
+        : OTSBase(name, libraryId), IOTSTemplate<T>
         where T : IOTSComponent
     {
         public abstract T CreateInstance();
     }
 
-    public abstract class OTSObjectBase(string name) : OTSBase(name), IOTSObject { }
+    public abstract class OTSObjectBase(string name, Guid parentId) : OTSBase(name, parentId), IOTSObject { }
 
     #endregion
 
 
     #region IO Nodes
 
-    public class OTSIOBase(string name, Guid componentId, OTSTypes type) : OTSBase(name), IOTSIONodeDefinition
+    public class OTSIOBase(string name, Guid componentId, OTSTypes type) : OTSBase(name, componentId), IOTSIONodeDefinition
     {
         public IOTSData? Value
         {
@@ -54,7 +55,6 @@ namespace OTSSDK
             }
         }
 
-        public Guid ComponentId { get; } = componentId;
         public OTSTypes OTSType { get; protected set; } = type;
         private object? TempValue { get; set; }
     }
@@ -66,14 +66,6 @@ namespace OTSSDK
         { 
             public IOTSOutput Output { get; } = connectee;
         }
-
-    //public class OTSViewTemplate(string name, Guid componentId, OTSTypes type) :
-    //    OTSViewBase(name, componentId, type), 
-    //    IOTSTemplate<IOTSView>,
-    //    IOTSViewTemplate
-    //{
-    //    public IOTSView CreateInstance() => new OTSView(this);
-    //}
 
     public class OTSView: OTSViewBase, IOTSView
     {
@@ -93,14 +85,29 @@ namespace OTSSDK
             }
         }
     
-        public IOTSData? Peak() => Value;    
+        public IOTSData? Peak() => Value;
+
+        public IOTSLink? Link { get; private set; }
+        public bool SetLink(IOTSLink link)
+        {
+            if(Link != null){ return false; }
+            Link = link;
+            return true;
+        }
+
+        public bool RemoveLink()
+        {
+            if(Link == null){ return false; }
+            Link = null;
+            return true;
+        }
     
         public OTSView(string name, IOTSOutput connectee,
             Guid componentId, OTSTypes initialType = OTSTypes.SIGNED) :
             base(name, connectee, componentId, initialType) { }
 
-        public OTSView(IOTSViewTemplate template)
-            : base(template.Name, template.Output,  template.ComponentId, template.OTSType) { }
+        public OTSView(IOTSViewTemplate template, Guid componentId)
+            : base(template.Name, template.Output,  componentId, template.OTSType) { }
     }
 
     //------------------- Input -----------------------//
@@ -108,15 +115,15 @@ namespace OTSSDK
         OTSIOBase(name, componentId, type), IOTSInputDefinition
         { }
 
-    public class OTSInputTemplate(string name, Guid componentId, OTSTypes type) :
-        OTSInputBase(name, componentId, type), 
+    public class OTSInputTemplate(string name, OTSTypes type) :
+        OTSInputBase(name, Guid.Empty, type), 
         IOTSTemplate<IOTSInput>,
         IOTSInputTemplate
     {
         public IOTSInput CreateInstance() => new OTSInput(this);
     }
 
-    public class OTSInput: OTSInputBase, IOTSInput
+    public class OTSInput(IOTSInputTemplate template) : OTSInputBase(template.Name, Guid.Empty, template.OTSType), IOTSInput
     {
         public virtual void Set(IOTSData? data)
         {
@@ -130,33 +137,52 @@ namespace OTSSDK
             }
         }
     
-        public IOTSData? Peak() => Value;    
-    
-        public OTSInput(string name, Guid componentId, OTSTypes initialType = OTSTypes.SIGNED) :
-            base(name, componentId, initialType) { }
+        public IOTSLink? Link { get; private set; }
+        public bool SetLink(IOTSLink link)
+        {
+            if(Link != null){ return false; }
+            Link = link;
+            return true;
+        }
 
-        public OTSInput(IOTSInputTemplate template)
-            : base(template.Name, template.ComponentId, template.OTSType) { }
+        public bool RemoveLink()
+        {
+            if(Link == null){ return false; }
+            Link = null;
+            return true;
+        }
+
+        public IOTSData? Peak() => Value;
     }
 
 
     //------------------- Output -----------------------//
-    public class OTSOutputBase(string name, Guid componentId, OTSTypes type) 
+    public class OTSOutputBase(string name, Guid componentId, OTSTypes type)
         : OTSIOBase(name, componentId, type), IOTSOutputDefinition
-        { }
+    { }
 
-    public abstract class OTSOutputTemplate<T>(string name, Guid componentId, OTSTypes type) :
-        OTSOutputBase(name, componentId, type),
+    public class OTSOutputTemplate(string name, OTSTypes type) :
+        OTSOutputBase(name, Guid.Empty, type),
         IOTSTemplate<IOTSOutput>,
         IOTSOutputTemplate
-        where T : IOTSOutput
     {
-        public abstract IOTSOutput CreateInstance();
+        
+        public IOTSOutput CreateInstance() => new OTSOutput(this);
     }
 
-    public class OTSOutput(string name, Guid componentId, OTSTypes type) 
-        : OTSOutputBase(name, componentId, type), IOTSOutput
+    public class OTSOutput(IOTSOutputTemplate template) : OTSOutputBase(template.Name, Guid.Empty, template.OTSType), IOTSOutput
     {
+        public IEnumerable<IOTSLink> Links { get; private set; } = [];
+        public bool SetLink(IOTSLink link)
+        {
+            if(Links.Any(x => x.Input.ID == link.Input.ID && x.Output.ID == link.Output.ID))
+            {
+                return false;
+            }
+
+            ((ICollection<IOTSLink>)Links).Add(link);
+            return true;
+        }
     }
 
     #endregion
@@ -173,7 +199,7 @@ namespace OTSSDK
         where TField : IOTSConfigFieldDefinition
     {
         public bool AllowExpansion { get; }
-        public Guid LibraryGuid { get; }
+        public Guid LibraryGuid => ParentId;
 
         #pragma warning disable IDE0028 // Simplify collection initialization
         public IEnumerable<TInput> Inputs { get; protected set; } = [];
@@ -183,19 +209,36 @@ namespace OTSSDK
         public Lazy<OTSComponentClass> ComponentClass { get; protected set; }
         #pragma warning restore IDE0028 // Simplify collection initialization
 
-        public OTSComponentBase(string name, Guid libraryGuid, bool allowExpansion) : base(name)
+        public OTSComponentBase(string name, Guid libraryGuid, 
+            IEnumerable<TInput> inputs,
+            IEnumerable<TOutput> outputs,
+            List<TField> fields,
+            bool allowExpansion) : base(name, libraryGuid)
         {
             AllowExpansion = allowExpansion;
-            LibraryGuid = libraryGuid;
             ComponentClass =  new Lazy<OTSComponentClass>(() => CommonUtil.IdentifyComponentClass(this));
+            Inputs = inputs;
+            Outputs = outputs;
+            Fields = fields;
+            Views = [];
         }
     }
 
-    public abstract class OTSComponentTemplate<T>(string name, Guid libraryGuid, bool allowExpansion) :
-        OTSComponentBase<IOTSInputTemplate, IOTSViewTemplate, IOTSOutputTemplate, IOTSConfigFieldTemplate>
-        (name, libraryGuid, allowExpansion),
+    public abstract class OTSComponentTemplate<T> :
+        OTSComponentBase<IOTSInputTemplate, IOTSViewTemplate, IOTSOutputTemplate, IOTSConfigFieldTemplate>,
         IOTSComponentTemplate<T> where T : IOTSComponent
     {
+        public OTSComponentTemplate(string name, Guid libraryGuid,
+        IEnumerable<IOTSInputTemplate> inputs,
+        IEnumerable<IOTSOutputTemplate> outputs,
+        List<IOTSConfigFieldTemplate> fields, 
+        bool allowExpansion) : base (name, libraryGuid, inputs, outputs, fields, allowExpansion)
+        {
+            foreach (var input in inputs) { input.ParentId = ID; }
+            foreach (var output in outputs) { output.ParentId = ID; }
+            foreach (var field in fields) { field.ParentId = ID; }
+        }
+
         public abstract T CreateInstance();
     }
 
@@ -216,10 +259,10 @@ namespace OTSSDK
         {
             if(!AllowExpansion) { return null; }
             var view = new OTSView($"View {Views.Count()+1}", providerNode, ID, providerNode.OTSType);
-            var config = new OTSConfigField(view.Name, view.OTSType, true);
+            var config = new OTSConfigField(view.Name, view.OTSType, ID, true);
 
-            ((ICollection<IOTSView>)Views).Add(view);
-            ((ICollection<IOTSConfigField>)Fields).Add(config);
+            Views = Views.Append(view);
+            Fields = Fields.Append(config);
 
             return view;
         }
@@ -233,35 +276,38 @@ namespace OTSSDK
                 (((ICollection<IOTSViewDefinition>)Views).Remove(viewRemove) &&
                 ((ICollection<IOTSConfigField>)Fields).Remove(configRemove));
         }
-        
-        public OTSComponent(string name, Guid libraryGuid, bool allowExpansion = false) :
-            base(name, libraryGuid, allowExpansion)
-        { 
-            
-        }
 
         public OTSComponent(IOTSComponentTemplate<IOTSComponent> template) : 
-            base(template.Name, template.LibraryGuid, template.AllowExpansion)
-            { }
+            base(template.Name, template.LibraryGuid, 
+                template.Inputs.Select(x => x.CreateInstance()).ToList(),
+                template.Outputs.Select(x => x.CreateInstance()).ToList(),
+                template.Fields.Select(x => x.CreateInstance()).ToList(),
+                template.AllowExpansion)
+    { 
+        foreach(var input in (List<IOTSInput>)Inputs) { input.ParentId = ID; }
+        foreach (var item in (List<IOTSOutput>)Outputs) { item.ParentId = ID; }
+        foreach (var field in (List<IOTSConfigField>)Fields) { field.ParentId = ID; }
+        }
 
         public virtual void Update(){}
     }
 
-    public abstract class OTSMonitorTemplate<T>(string name, Guid libraryGuid, bool allowExpansion) : 
-        OTSComponentTemplate<T>(name, libraryGuid, allowExpansion)
-        where T : IOTSComponent
+    #endregion
+
+    #region Monitor
+
+    public class OTSMonitorTemplate<T>(string name, Guid libraryGuid) :
+        OTSComponentTemplate<IOTSMonitor>(name, libraryGuid, [], [], [], true),
+        IOTSMonitorTemplate where T : IOTSMonitor
     {
+        public override IOTSMonitor CreateInstance()
+        {
+            return new OTSMonitor(this);
+        }
     }
 
-    public abstract class OTSMonitor : OTSComponent
+    public class OTSMonitor(IOTSMonitorTemplate template) : OTSComponent(template), IOTSMonitor
     {
-        protected OTSMonitor(string name, Guid libraryGuid, bool allowExpansion = false) : base(name, libraryGuid, allowExpansion)
-        {
-        }
-
-        protected OTSMonitor(IOTSComponentTemplate<IOTSComponent> template) :
-            base(template.Name, template.LibraryGuid, template.AllowExpansion) { }
-
         public override void Update()
         {
             foreach(var view in Views)
@@ -274,19 +320,39 @@ namespace OTSSDK
 
     #endregion
 
+    #region Provider
+
+    public class OTSProviderTemplate<T>(string name, Guid libraryGuid,
+        IEnumerable<IOTSOutputTemplate> outputs,
+        List<IOTSConfigFieldTemplate> fields) :
+        OTSComponentTemplate<IOTSProvider>(name, libraryGuid, [], outputs, fields, false),
+        IOTSProviderTemplate where T: IOTSProvider
+    {
+        public override IOTSProvider CreateInstance()
+        {
+            return new OTSProvider(this);
+        }
+    }
+
+    public class OTSProvider(IOTSProviderTemplate template) : 
+        OTSComponent(template), IOTSProvider
+    {
+    }
+
+    #endregion
 
     #region Auxilliary 
 
     //------------------- Field -----------------------//
-    public class OTSFieldBase(string name) :
-        OTSBase(name), IOTSFieldDefinition
+    public class OTSFieldBase(string name, Guid componentId) :
+        OTSBase(name, componentId), IOTSFieldDefinition
     {
         public OTSTypes OTSType { get; }
         public bool? Visibility { get; }
     }
 
-    public class OTSFieldTemplate(string name) :
-        OTSFieldBase(name), 
+    public class OTSFieldTemplate(string name, Guid componentId) :
+        OTSFieldBase(name, componentId), 
         IOTSTemplate<IOTSField>,
         IOTSFieldTemplate
     {
@@ -300,21 +366,33 @@ namespace OTSSDK
         internal IOTSData? Value { get; private set; }
         public void Set(IOTSData? data) { Value = data; }
 
-        public OTSField(string name): base(name) {}
-        public OTSField(IOTSFieldTemplate template): base(template.Name) {}
+        public OTSField(string name, Guid componentId): base(name, componentId) {}
+        public OTSField(IOTSFieldTemplate template): base(template.Name, Guid.Empty) {}
     }
 
     //------------------- Config Field -----------------------//
-    public class OTSConfigFieldBase(string name, OTSTypes type, bool? visiblity=null, EditLock editLock=EditLock.AlwaysLocked) :
-        OTSBase(name), IOTSConfigFieldDefinition
+    public class OTSConfigFieldBase :
+        OTSBase, IOTSConfigFieldDefinition
     {
-        public OTSTypes OTSType { get; protected set; } = type;
-        public bool? Visibility { get; protected set; } = visiblity;
-        public EditLock EditLock { get; protected set; } = editLock;
+        public OTSTypes OTSType { get; protected set; }
+        public bool? Visibility { get; protected set; }
+        public EditLock EditLock { get; protected set; }
+
+        public OTSConfigFieldBase (string name, OTSTypes type, Guid componentId, bool? visiblity=null, EditLock editLock=EditLock.AlwaysLocked)
+            : base(name, componentId)
+        {
+            OTSType = type;
+            Visibility = visiblity;
+            EditLock = editLock;
+        }
+
+        public OTSConfigFieldBase(IOTSConfigFieldTemplate template) : base(template.Name, Guid.Empty)
+        { }
+
     }
 
-    public class OTSConfigFieldTemplate(string name, OTSTypes type, bool? visiblity=null, EditLock editLock=EditLock.AlwaysLocked) :
-        OTSConfigFieldBase(name, type, visiblity, editLock), 
+    public class OTSConfigFieldTemplate(string name, OTSTypes type, Guid componentId, bool? visiblity=null, EditLock editLock=EditLock.AlwaysLocked) :
+        OTSConfigFieldBase(name, type, componentId, visiblity, editLock), 
         IOTSTemplate<IOTSConfigField>,
         IOTSConfigFieldTemplate
     {
@@ -329,15 +407,15 @@ namespace OTSSDK
         public virtual void Set(IOTSData? data) { Value = data; }
         public virtual IOTSData? Get() { return Value; }
 
-        public OTSConfigField(string name, OTSTypes type, bool? visiblity=null, EditLock editLock=EditLock.AlwaysLocked): 
-            base(name, type, visiblity, editLock) {}
+        public OTSConfigField(string name, OTSTypes type, Guid componentId, bool? visiblity=null, EditLock editLock=EditLock.AlwaysLocked): 
+            base(name, type, componentId, visiblity, editLock) {}
         public OTSConfigField(IOTSConfigFieldTemplate template): 
-            base(template.Name, template.OTSType, template.Visibility, template.EditLock) {}
+            base(template.Name, template.OTSType, Guid.Empty, template.Visibility, template.EditLock) {}
     }
 
     //------------------- Link -----------------------//
 
-    public class OTSLink(IOTSOutput output, IOTSInput input) :  OTSBase($"{output.ID}::{input.ID}"), IOTSLink
+    public class OTSLink(IOTSOutput output, IOTSInput input) :  OTSBase($"{output.ID}::{input.ID}", Guid.Empty), IOTSLink
     {
         public IOTSInput Input { get; private set; } = input;
         public IOTSOutput Output { get; private set; } = output;
@@ -356,7 +434,7 @@ namespace OTSSDK
     #region Application
 
     public class OTSApplication(string appName) : 
-        OTSBase(appName), IOTSApplication
+        OTSBase(appName, Guid.Empty), IOTSApplication
     {
 
     }

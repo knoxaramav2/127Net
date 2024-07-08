@@ -24,7 +24,7 @@ namespace OTSTests.StdLibTests.Device
             _pluginManager = new();
             try
             {
-                _deviceHwLib = _pluginManager.GetLibrary("OTSDeviceHwInfo")!;
+                _deviceHwLib = _pluginManager.GetLibrary(StdLibUtils.DeviceInfoLibName)!;
             }
             catch (Exception) { Assert.Fail(); }
 
@@ -39,7 +39,7 @@ namespace OTSTests.StdLibTests.Device
             Assert.Multiple(() =>
             {
                 Assert.That(comp, Is.Not.Null);
-                var processMem = comp!.GetOutput("ProcessMemory");
+                var processMem = comp!.GetOutput(StdLibUtils.ProcessMemory);
                 Assert.That(processMem, Is.Not.Null);
                 var value = processMem!.Value?.As<long>();
                 Assert.That(value, Is.Not.Zero);
@@ -50,14 +50,14 @@ namespace OTSTests.StdLibTests.Device
         [Test]
         public void SystemMemory()
         {
-            var comp = _deviceHwLib.GetComponent("MemoryMonitor");
+            var comp = _deviceHwLib.GetComponent(StdLibUtils.MemoryMonitor);
             comp?.Update();
 
             Assert.Multiple(() =>
             {
                 Assert.That(comp, Is.Not.Null);
-                var systemMemTotal = comp!.GetOutput("SystemMemoryTotal");
-                var systemMemAvailable = comp!.GetOutput("SystemMemoryAvailable");
+                var systemMemTotal = comp!.GetOutput(StdLibUtils.SystemMemoryTotal);
+                var systemMemAvailable = comp!.GetOutput(StdLibUtils.SystemMemoryAvailable);
 
                 Assert.That(systemMemTotal, Is.Not.Null);
                 Assert.That(systemMemAvailable, Is.Not.Null);

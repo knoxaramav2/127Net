@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 
 namespace OTSDeviceInfo
 {
+
+
     #if OS_WINDOWS
     internal class MemoryInfo
     {
@@ -62,30 +64,65 @@ namespace OTSDeviceInfo
     }
     #endif
 
-    public class MemComponentTemplate(Guid libGuid) : OTSComponentTemplate<IOTSComponent>(StdLibUtils.MemoryMonitor, libGuid, false)
+    public class MemComponentTemplate(Guid libGuid) :
+         OTSProviderTemplate<MemComponent>(StdLibUtils.MemoryMonitor, libGuid, 
+             [
+                ProcessMemoryOutput(),
+                AvailableMemoryOutput(),
+                SystemMemoryOutput()
+             ],
+             []
+             )
     {
-        public override MemComponent CreateInstance() => new (Name, LibraryGuid);
-        
+
+        private static MemMonitorOutputTemplate ProcessMemoryOutput()
+        {
+            return new MemMonitorOutputTemplate(
+                StdLibUtils.ProcessMemory, OTSTypes.SIGNED
+                );
+        }
+
+        private static MemMonitorOutputTemplate AvailableMemoryOutput()
+        {
+            return new MemMonitorOutputTemplate(
+               StdLibUtils.SystemMemoryAvailable, OTSTypes.SIGNED
+                );
+        }
+
+        private static MemMonitorOutputTemplate SystemMemoryOutput()
+        {
+            return new MemMonitorOutputTemplate(
+                StdLibUtils.SystemMemoryTotal, OTSTypes.SIGNED
+                );
+        }
+
+        public override MemComponent CreateInstance()
+        {
+            return new MemComponent(this);
+        }
     }
 
-    public class MemComponent : OTSComponent
+    public class MemComponent : OTSProvider
     {
+        private IOTSOutput ProcessOut { get; set; }
+        private IOTSOutput AvailableOut { get; set; }
+        private IOTSOutput TotalOut { get; set; }
+
         internal static Process _proc = Process.GetCurrentProcess();
 
-        public MemComponent(string name, Guid libGuid) : base(name, libGuid)
+        public MemComponent(MemComponentTemplate template) : 
+            base(template)
         {
-            Outputs = [
-                new OTSOutput(StdLibUtils.ProcessMemory, ID, OTSTypes.SIGNED),
-                new OTSOutput(StdLibUtils.SystemMemoryAvailable, ID, OTSTypes.UNSIGNED),
-                new OTSOutput(StdLibUtils.SystemMemoryTotal, ID, OTSTypes.UNSIGNED),
-                ];  
+            ProcessOut = Outputs.First(x => x.Name.Equals(StdLibUtils.ProcessMemory, StringComparison.OrdinalIgnoreCase));
+            AvailableOut = Outputs.First(x => x.Name.Equals(StdLibUtils.SystemMemoryAvailable, StringComparison.OrdinalIgnoreCase));
+            TotalOut = Outputs.First(x => x.Name.Equals(StdLibUtils.SystemMemoryTotal, StringComparison.OrdinalIgnoreCase));
         }
 
         public override void Update()
         {
-            Outputs.ElementAt(0).Value = new OTSData(OTSTypes.SIGNED, GetProcessMemory());
-            Outputs.ElementAt(1).Value = new OTSData(OTSTypes.UNSIGNED, GetAvailableSystemMemory());
-            Outputs.ElementAt(2).Value = new OTSData(OTSTypes.UNSIGNED, GetTotalSystemMemory());
+            ProcessOut.Value = new OTSData(OTSTypes.SIGNED, GetProcessMemory());
+            AvailableOut.Value = new OTSData(OTSTypes.UNSIGNED, GetAvailableSystemMemory());
+            TotalOut.Value = new OTSData(OTSTypes.UNSIGNED, GetTotalSystemMemory());
         }
 
         private static ulong GetAvailableSystemMemory()
@@ -110,7 +147,10 @@ namespace OTSDeviceInfo
             return 0;
         }
 
-        private long GetProcessMemory() => _proc.PrivateMemorySize64;
-       
+        private static long GetProcessMemory() => _proc.PrivateMemorySize64;
+    }
+
+    public class MemMonitorOutputTemplate(string name, OTSTypes type) : OTSOutputTemplate(name, type)
+    {
     }
 }

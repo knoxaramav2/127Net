@@ -19,17 +19,16 @@ namespace OTStdLogic
         public OTSLogicLib()
         {
             Components = [
-                new OTSLogicalAndTemplate(ID),
-                new OTSLogicalOrTemplate(ID),
-                new OTSLogicalXorTemplate(ID),
+                OTSCompareLogic.AndTemplate(ID),
+                OTSCompareLogic.OrTemplate(ID),
+                OTSCompareLogic.XorTemplate(ID),
 
-                new OTSLogicalEqualTemplate(ID),
-                new OTSLogicalNotEqualTemplate(ID),
-                new OTSLogicalLessTemplate(ID),
-                new OTSLogicalLessEqualTemplate(ID),
-                new OTSLogicalGreaterTemplate(ID),
-                new OTSLogicalGreaterEqualTemplate(ID),
-
+                OTSCompareLogic.EqualTemplate(ID),
+                OTSCompareLogic.NotEqualTemplate(ID),
+                OTSCompareLogic.LessEqualTemplate(ID),
+                OTSCompareLogic.LessTemplate(ID),
+                OTSCompareLogic.GreaterEqualTemplate(ID),
+                OTSCompareLogic.GreaterTemplate(ID)
             ];
         }
     }
