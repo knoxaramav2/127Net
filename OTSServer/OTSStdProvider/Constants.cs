@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace OTSStdProvider
 {
-    public class OTSConstantProviderTemplate(string name, Guid libGuid, OTSTypes type) : 
-        ProviderComponentTemplateBase(name, libGuid, 
+    public class OTSConstantProviderTemplate(string name, Guid libGuid, string description, OTSTypes type) : 
+        ProviderComponentTemplateBase(name, libGuid, description,
             [new OTSOutputTemplate("Value", type)], 
             [new OTSConfigFieldTemplate("Value", type, Guid.Empty, editLock: EditLock.Unlocked)]
             )
@@ -41,19 +41,19 @@ namespace OTSStdProvider
     public static class OTSConstantTemplates
     {
         public static OTSConstantProviderTemplate Signed(Guid libGuid) =>
-            new (StdLibUtils.ProvidersConstSigned, libGuid, OTSTypes.SIGNED);
+            new (StdLibUtils.ProvidersConstSigned, libGuid, "Constant signed value", OTSTypes.SIGNED);
         public static OTSConstantProviderTemplate Unsigned(Guid libGuid) =>
-            new (StdLibUtils.ProvidersConstUnsigned, libGuid, OTSTypes.UNSIGNED);
+            new (StdLibUtils.ProvidersConstUnsigned, libGuid, "Constant unsigned value", OTSTypes.UNSIGNED);
         public static OTSConstantProviderTemplate Decimal(Guid libGuid) =>
-            new (StdLibUtils.ProvidersConstDecimal, libGuid, OTSTypes.DECIMAL);
+            new (StdLibUtils.ProvidersConstDecimal, libGuid, "Constant floating point value", OTSTypes.DECIMAL);
         public static OTSConstantProviderTemplate Bool(Guid libGuid) =>
-            new (StdLibUtils.ProvidersConstBool, libGuid, OTSTypes.BOOL);
+            new (StdLibUtils.ProvidersConstBool, libGuid, "Constant bool value", OTSTypes.BOOL);
         public static OTSConstantProviderTemplate String(Guid libGuid) =>
-            new (StdLibUtils.ProvidersConstString, libGuid, OTSTypes.STRING);
+            new (StdLibUtils.ProvidersConstString, libGuid, "Constant string value", OTSTypes.STRING);
         public static OTSConstantProviderTemplate Map(Guid libGuid) =>
-            new (StdLibUtils.ProvidersConstMap, libGuid, OTSTypes.MAP);
+            new (StdLibUtils.ProvidersConstMap, libGuid, "Constant mapped values", OTSTypes.MAP);
         public static OTSConstantProviderTemplate List(Guid libGuid) =>
-            new (StdLibUtils.ProvidersConstList, libGuid, OTSTypes.LIST);
+            new (StdLibUtils.ProvidersConstList, libGuid, "Constant list of values", OTSTypes.LIST);
 
     }
 }

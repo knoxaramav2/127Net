@@ -98,6 +98,7 @@ namespace OTSSDK
         IEnumerable<TOutput> Outputs { get; }
         IEnumerable<TField> Fields { get; }
         Lazy<OTSComponentClass> ComponentClass { get; }
+        string Description { get; }
     }
 
     public interface IOTSComponentTemplate<out T> : 

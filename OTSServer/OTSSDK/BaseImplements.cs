@@ -207,9 +207,13 @@ namespace OTSSDK
         public IEnumerable<TOutput> Outputs { get; protected set; } = [];
         public IEnumerable<TField> Fields { get; protected set; } = new List<TField>();
         public Lazy<OTSComponentClass> ComponentClass { get; protected set; }
+
+        public string Description { get; }
+
         #pragma warning restore IDE0028 // Simplify collection initialization
 
-        public OTSComponentBase(string name, Guid libraryGuid, 
+        public OTSComponentBase(string name, Guid libraryGuid,
+            string description,
             IEnumerable<TInput> inputs,
             IEnumerable<TOutput> outputs,
             List<TField> fields,
@@ -221,6 +225,7 @@ namespace OTSSDK
             Outputs = outputs;
             Fields = fields;
             Views = [];
+            Description = description;
         }
     }
 
@@ -229,10 +234,11 @@ namespace OTSSDK
         IOTSComponentTemplate<T> where T : IOTSComponent
     {
         public OTSComponentTemplate(string name, Guid libraryGuid,
-        IEnumerable<IOTSInputTemplate> inputs,
-        IEnumerable<IOTSOutputTemplate> outputs,
-        List<IOTSConfigFieldTemplate> fields, 
-        bool allowExpansion) : base (name, libraryGuid, inputs, outputs, fields, allowExpansion)
+            string description,
+            IEnumerable<IOTSInputTemplate> inputs,
+            IEnumerable<IOTSOutputTemplate> outputs,
+            List<IOTSConfigFieldTemplate> fields, 
+            bool allowExpansion) : base (name, libraryGuid, description, inputs, outputs, fields, allowExpansion)
         {
             foreach (var input in inputs) { input.ParentId = ID; }
             foreach (var output in outputs) { output.ParentId = ID; }
@@ -278,7 +284,7 @@ namespace OTSSDK
         }
 
         public OTSComponent(IOTSComponentTemplate<IOTSComponent> template) : 
-            base(template.Name, template.LibraryGuid, 
+            base(template.Name, template.LibraryGuid, template.Description,
                 template.Inputs.Select(x => x.CreateInstance()).ToList(),
                 template.Outputs.Select(x => x.CreateInstance()).ToList(),
                 template.Fields.Select(x => x.CreateInstance()).ToList(),
@@ -296,8 +302,8 @@ namespace OTSSDK
 
     #region Monitor
 
-    public class OTSMonitorTemplate<T>(string name, Guid libraryGuid) :
-        OTSComponentTemplate<IOTSMonitor>(name, libraryGuid, [], [], [], true),
+    public class OTSMonitorTemplate<T>(string name, Guid libraryGuid, string description) :
+        OTSComponentTemplate<IOTSMonitor>(name, libraryGuid, description, [], [], [], true),
         IOTSMonitorTemplate where T : IOTSMonitor
     {
         public override IOTSMonitor CreateInstance()
@@ -323,9 +329,10 @@ namespace OTSSDK
     #region Provider
 
     public class OTSProviderTemplate<T>(string name, Guid libraryGuid,
+        string description,
         IEnumerable<IOTSOutputTemplate> outputs,
         List<IOTSConfigFieldTemplate> fields) :
-        OTSComponentTemplate<IOTSProvider>(name, libraryGuid, [], outputs, fields, false),
+        OTSComponentTemplate<IOTSProvider>(name, libraryGuid, description, [], outputs, fields, false),
         IOTSProviderTemplate where T: IOTSProvider
     {
         public override IOTSProvider CreateInstance()

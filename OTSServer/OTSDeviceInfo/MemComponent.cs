@@ -66,6 +66,7 @@ namespace OTSDeviceInfo
 
     public class MemComponentTemplate(Guid libGuid) :
          OTSProviderTemplate<MemComponent>(StdLibUtils.MemoryMonitor, libGuid, 
+             "Provide system and process memory information",
              [
                 ProcessMemoryOutput(),
                 AvailableMemoryOutput(),

@@ -31,7 +31,9 @@
             <div class="composite_title_cell component_format">
                 <span>Name</span>
                 <span>Description</span>
-                <span>Expand</span>
+                <span>In</span>
+                <span>Out</span>
+                <span>Expands</span>
             </div>
         </div>
         @foreach(var comp in lib.Components)
@@ -39,7 +41,9 @@
             <div class="composite_body">
                 <div class="composite_body_cell component_format">
                     <span>@(LegalizeName(comp.Name))</span>
-                    <span>Placeholder description</span>
+                    <span>@comp.Description</span>
+                    <span>@comp.Inputs.Count()</span>
+                    <span>@comp.Outputs.Count()</span>
                     <span class="@activeClassStr(comp.AllowExpansion)"></span>
                 </div>
             </div>

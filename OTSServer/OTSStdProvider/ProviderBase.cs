@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 namespace OTSStdProvider
 {
     public class ProviderComponentTemplateBase(string name, Guid libGuid,
+        string description,
         IEnumerable<IOTSOutputTemplate> outputs,
         List<IOTSConfigFieldTemplate> fields
         ) : 
-        OTSProviderTemplate<ProviderComponentBase>(name, libGuid, 
+        OTSProviderTemplate<ProviderComponentBase>(name, libGuid, description,
             outputs, fields)
     {
 

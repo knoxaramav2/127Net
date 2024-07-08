@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 
 namespace OTSStdMonitor
 {
-    public class RawMonitorTemplate(Guid libGuid) : OTSMonitorTemplate<IOTSMonitor>(StdLibUtils.RawMonitor, libGuid)
+    public class RawMonitorTemplate(Guid libGuid) : 
+        OTSMonitorTemplate<IOTSMonitor>(StdLibUtils.RawMonitor, libGuid, 
+            "Display input values")
     {
         public override RawMonitor CreateInstance() => new (this);
         

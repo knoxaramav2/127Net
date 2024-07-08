@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace OTSStdProvider
 {
-    public class OTSRandomProviderTemplate<T>(string name, Guid libGuid, OTSTypes type, Func<T, T, IOTSData> proc) : 
-        ProviderComponentTemplateBase(name, libGuid, 
+    public class OTSRandomProviderTemplate<T>(string name, Guid libGuid, string description, OTSTypes type, Func<T, T, IOTSData> proc) : 
+        ProviderComponentTemplateBase(name, libGuid, description,
             [new OTSOutputTemplate("Value", type)], 
             [
                 new OTSConfigFieldTemplate("MinValue", type, Guid.Empty, editLock: EditLock.Unlocked),
@@ -52,11 +52,11 @@ namespace OTSStdProvider
     public static class OTSRandomTemplates
     {
         public static OTSRandomProviderTemplate<long> Signed(Guid libGuid) =>
-            new (StdLibUtils.ProvidersRandomSigned, libGuid, OTSTypes.SIGNED, 
+            new (StdLibUtils.ProvidersRandomSigned, libGuid, "Random signed value", OTSTypes.SIGNED,
                 (long min, long max) => new OTSData(OTSTypes.SIGNED, new Random().NextInt64(min, max)));
 
         public static OTSRandomProviderTemplate<double> Decimal(Guid libGuid) =>
-            new (StdLibUtils.ProvidersRandomSigned, libGuid, OTSTypes.SIGNED, 
+            new (StdLibUtils.ProvidersRandomSigned, libGuid, "Random floating point value", OTSTypes.SIGNED, 
                 (double min, double max) => new OTSData(OTSTypes.DECIMAL, new Random().NextDouble() * (max-min) + min));
     }
 }

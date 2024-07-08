@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace OTSStdMath
 {
-    public class OTSMathBinaryTemplate(string name, Guid libGuid, Func<OTSData?, OTSData?, OTSData> operation) :
-        OTSComponentTemplate<IOTSComponent>(name, libGuid,
+    public class OTSMathBinaryTemplate(string name, Guid libGuid, string description,
+        Func<OTSData?, OTSData?, OTSData> operation) :
+        OTSComponentTemplate<IOTSComponent>(name, libGuid, description,
             [
                 new OTSInputTemplate("Input 1", OTSTypes.SIGNED),
                 new OTSInputTemplate("Input 2", OTSTypes.SIGNED),
