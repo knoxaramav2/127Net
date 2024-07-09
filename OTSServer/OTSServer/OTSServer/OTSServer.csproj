@@ -16,7 +16,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\ItemTree.css" />
+    <None Include="wwwroot\circuitDesigner.css" />
+    <None Include="wwwroot\itemTree.css" />
   </ItemGroup>
 
   <ItemGroup>

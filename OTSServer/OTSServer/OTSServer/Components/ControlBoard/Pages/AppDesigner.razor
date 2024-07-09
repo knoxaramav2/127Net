@@ -13,6 +13,7 @@
         <div class="designer-actions">
             <input type="checkbox" checked="@IsPathShown" @onchange="PathShownChanged"/>
             <label for="">Show Paths</label>
+            <button @onclick=TestFunc>Test</button>
         </div>
         <div class="designer-options">
             <button @onclick="@(_ => SetConfigMode(ConfigMode.CfgSearch))">Components</button>
@@ -21,7 +22,9 @@
     </div>
     <div class="editor">
         <div class="editor-board">
-            <h1>Sup</h1>
+            <canvas id="design-canvas">
+
+            </canvas>
         </div>
         <div class="config-panel">
             @if (CfgMode == ConfigMode.CfgSystem)
@@ -51,10 +54,16 @@
     public bool IsPathShown { get; set; } = false;
 
     public IOTSComponentTemplate<IOTSComponent>? ConfigComponent { get; set; } = null;
+    public IJSObjectReference OtsDesignerInterop { get; set; }
 
     public class ComponentItem : ItemTreeNodeBase
     {
 
+    }
+
+    private async void TestFunc()
+    {
+        await OtsDesignerInterop.InvokeVoidAsync("showAlert");
     }
 
     public List<ComponentItem> ComponentTree { get; set; } = [];
@@ -91,9 +100,20 @@
         Console.WriteLine($"TREE : {ComponentTree.Count()}");
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            OtsDesignerInterop = await JsRuntime.InvokeAsync<IJSObjectReference>("otsdesigner.initAppController");
+
+            StateHasChanged();
+        }
+    }
+
     protected override void OnInitialized()
     {
         LoadComponents();
+
         base.OnInitialized();
     }
 
@@ -116,8 +136,16 @@
         Console.WriteLine($"Chang mode to {CfgMode}");
     }
 
-    public void OnComponentNodeSelect(ItemTreeNodeBase item)
+    public async void OnComponentNodeSelect(ItemTreeNodeBase item)
     {
-        
+        if (item.IsGroup)
+        {
+
+        } else
+        {
+            var componentId = item.NodeId;
+            await OtsDesignerInterop.InvokeVoidAsync("addComponent", componentId);
+        }
+
     }
 }
