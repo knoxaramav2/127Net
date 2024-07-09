@@ -7,7 +7,7 @@ export var otsdesigner;
         OTSClass[OTSClass["Nomad"] = 2] = "Nomad";
         OTSClass[OTSClass["Provider"] = 3] = "Provider";
         OTSClass[OTSClass["Monitor"] = 4] = "Monitor";
-    })(OTSClass || (OTSClass = {}));
+    })(OTSClass = otsdesigner.OTSClass || (otsdesigner.OTSClass = {}));
     let Shapes;
     (function (Shapes) {
         Shapes[Shapes["Circle"] = 0] = "Circle";
