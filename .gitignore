@@ -430,3 +430,8 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Typescript generated JS
+./OTSServer/OTSServer/**/*.js
+/OTSServer/OTSServer/OTSServer/wwwroot/appblueprints.js
+/OTSServer/OTSServer/OTSServer/wwwroot/appdesigner.js
