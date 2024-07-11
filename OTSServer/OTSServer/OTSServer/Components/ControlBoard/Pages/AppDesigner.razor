@@ -1,6 +1,7 @@
 ﻿@page "/ControlBoard/AppDesigner"
 @rendermode InteractiveServer
 
+@using Newtonsoft.Json
 @using OTSSDK
 @using OTSControls
 @using static OTSControls.ItemTreeNode
@@ -13,7 +14,11 @@
         <div class="designer-actions">
             <input type="checkbox" checked="@IsPathShown" @onchange="PathShownChanged"/>
             <label for="">Show Paths</label>
-            <button @onclick=TestFunc>Test</button>
+            <InputSelect Value="SelectType" TValue="string" ValueChanged="TestFunc" ValueExpression="@(() => SelectType)">
+                @* <option value="RegisterLibrary">Register Library</option> *@
+                <option value="RegisterComponent">Register Component</option>
+                <option value="GetApp">Get App</option>
+            </InputSelect>
         </div>
         <div class="designer-options">
             <button @onclick="@(_ => SetConfigMode(ConfigMode.CfgSearch))">Components</button>
@@ -54,20 +59,41 @@
     public bool IsPathShown { get; set; } = false;
 
     public IOTSComponentTemplate<IOTSComponent>? ConfigComponent { get; set; } = null;
-    public IJSObjectReference OtsDesignerInterop { get; set; }
+    public IJSObjectReference OtsDesignerInterop { get; set; } = null!;
+    public IJSObjectReference OtsDesigner { get; set; } = null!;
+
+    public string SelectType = "";
 
     public class ComponentItem : ItemTreeNodeBase
     {
-
+        public required IOTSLibrary Library;
+        public required IOTSComponentTemplate<IOTSComponent>? Component;
     }
 
-    private async void TestFunc()
+    private async void TestFunc(string value)
     {
-        await OtsDesignerInterop.InvokeVoidAsync("showAlert");
+        if(Libraries.Count == 0){ return; }
+        var firstLib = Libraries.First();
+        var component = firstLib.Components.First();
+
+        switch (value)
+        {
+            case "RegisterComponent":
+                var jsonComp = JsonConvert.SerializeObject(firstLib);
+                await OtsDesigner.InvokeVoidAsync("insertComponent", jsonComp);
+                break;
+            case "GetApp":
+                var res = await OtsDesigner.InvokeAsync<string>("getApplicationMap");
+                var appMap = res;
+                break;
+        }
+
+        SelectType = value;
     }
 
     public List<ComponentItem> ComponentTree { get; set; } = [];
     private List<IOTSLibrary> Libraries = [];
+    private Dictionary<Guid, IOTSComponent> Components = [];
 
     public void LoadComponents()
     {
@@ -80,7 +106,9 @@
             {
                 Label = lib.Name,
                 NodeId = lib.ID.ToString(),
-                Children = []
+                Children = [],
+                Library = lib,
+                Component = null
             };
 
             foreach(var comp in lib.Components)
@@ -89,6 +117,8 @@
                 {
                     Label = comp.Name,
                     NodeId = comp.ID.ToString(),
+                    Library = lib,
+                    Component = comp
                 };
 
                 libNode.Children.Add(compNode);
@@ -104,7 +134,8 @@
     {
         if (firstRender)
         {
-            OtsDesignerInterop = await JsRuntime.InvokeAsync<IJSObjectReference>("otsdesigner.initAppController");
+            OtsDesignerInterop = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./otsdesigner/OTSDesignerManager.js");
+            OtsDesigner = await OtsDesignerInterop.InvokeAsync<IJSObjectReference>("initDesigner");
 
             StateHasChanged();
         }
@@ -136,15 +167,16 @@
         Console.WriteLine($"Chang mode to {CfgMode}");
     }
 
-    public async void OnComponentNodeSelect(ItemTreeNodeBase item)
+    public async void OnComponentNodeSelect(ItemTreeNodeBase rawItem)
     {
+        var item = (rawItem as ComponentItem)!;
+
         if (item.IsGroup)
         {
 
         } else
         {
-            var componentId = item.NodeId;
-            await OtsDesignerInterop.InvokeVoidAsync("addComponent", componentId);
+            await OtsDesigner.InvokeVoidAsync("insertComponent", item.Component);
         }
 
     }

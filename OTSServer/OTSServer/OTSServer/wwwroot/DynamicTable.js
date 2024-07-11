@@ -1,13 +1,10 @@
-var OTSServer;
-(function (OTSServer) {
-    var wwwroot;
-    (function (wwwroot) {
-        class DynamicTable {
-        }
-        function sayHello() {
-            return "Hello";
-        }
-        wwwroot.sayHello = sayHello;
-    })(wwwroot = OTSServer.wwwroot || (OTSServer.wwwroot = {}));
-})(OTSServer || (OTSServer = {}));
+const message = () => {
+    const name = "Jesse";
+    const age = 40;
+    return name + ' is ' + age + 'years old.';
+};
+export function al() {
+    alert('AAA');
+}
+export default message;
 //# sourceMappingURL=DynamicTable.js.map
