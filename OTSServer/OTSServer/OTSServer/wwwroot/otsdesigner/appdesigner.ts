@@ -132,12 +132,14 @@ class Canvas {
 
         ctx.lineWidth = 2;
         ctx.strokeStyle = Colors.Green;
+        ctx.globalAlpha = .3
         ctx.beginPath();
         ctx.moveTo(0, center.y);
         ctx.lineTo(cnv.width, center.y)
         ctx.moveTo(center.x, 0);
         ctx.lineTo(center.x, cnv.height);
         ctx.stroke();
+        ctx.globalAlpha = 1
     }
 
     private redraw(): void {
@@ -227,7 +229,7 @@ class Canvas {
 
     public addComponent(component: Component) {
         var center = this.canvasCenter();
-        component.setPos(this.canvasCenter());
+        component.setPos(this.canvasCenter(), this.context);
         this.components.push(component);
         this.redraw();
     }

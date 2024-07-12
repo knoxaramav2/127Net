@@ -18,14 +18,32 @@ export enum Colors {
     Clear = null
 }
 
-enum Types {
+export enum Types {
     String, Signed, Unsigned,
     Bool, Decimal, Map, Array
 }
 
 export type Dim = { x: number, y:number }
-const defaultDim: Dim = { x: 50, y:50 }
-const zeroDim: Dim = { x: 0, y: 0 }
+class BoxCoord {
+    public top: number;
+    public bottom: number;
+    public left: number;
+    public right: number;
+
+    constructor(pos:Dim, dim:Dim) {
+        this.top = pos.y - dim.y/2;
+        this.bottom = pos.y + dim.y/2;
+        this.left = pos.x - dim.x/2;
+        this.right = pos.x + dim.x/2;
+    }
+}
+
+const DefaultDim: Dim = { x: 50, y:50 }
+const ZeroDim: Dim = { x: 0, y: 0 }
+const LR_Margin: number = 1.15
+const TB_Margin: number = 1.40
+const TitleFont: string = '22px serif'
+const LabelFont: string = '14px serif'
 
 export class OTSObject {
     pos: Dim;
@@ -41,11 +59,11 @@ export class OTSObject {
         );
     }
 
-    public setPos(pos: Dim) {
+    public setPos(pos: Dim, ctx:CanvasRenderingContext2D) {
         this.pos = pos;
     }
 
-    constructor(pos:Dim = zeroDim, dim:Dim = defaultDim) {
+    constructor(pos:Dim = ZeroDim, dim:Dim = DefaultDim) {
         this.pos = pos;
         this.dim = dim;
     }
@@ -63,7 +81,7 @@ export class Renderable extends OTSObject {
     constructor(
         shape:Shapes, fill:Colors, stroke:Colors,
         strokeWidth: number = 2,
-        pos:Dim = zeroDim, dim:Dim = defaultDim) {
+        pos:Dim = ZeroDim, dim:Dim = DefaultDim) {
         super(pos, dim);
 
         this.shape = shape;
@@ -76,6 +94,10 @@ export class Renderable extends OTSObject {
 
     draw(ctx:CanvasRenderingContext2D) {
         
+        var finish = function (ctx, stroke, fill) { 
+            if (stroke != Colors.Clear) { ctx.stroke(); }
+            if (fill != Colors.Clear) { ctx.fill(); } }
+
         let pos = this.pos;
         let dim = this.dim;
         let lCr:Dim = { x: pos.x-dim.x/2, y: pos.y-dim.y/2 }
@@ -87,9 +109,12 @@ export class Renderable extends OTSObject {
 
         if (this.shape == Shapes.Oval) {
             ctx.arc(pos.x, pos.y, dim.x, 0, 2*Math.PI)
+
         } else if (this.shape == Shapes.Rect) {
             ctx.rect(lCr.x, lCr.y, dim.x, dim.y);
+
         } else if (this.shape == Shapes.RoundRect) {
+            ctx.roundRect(pos.x, pos.y, dim.x, dim.y, 10)
 
         } else if (this.shape == Shapes.Cylinder) {
             let ty = pos.y-dim.y/2;
@@ -110,15 +135,19 @@ export class Renderable extends OTSObject {
             ctx.moveTo(rCr.x, ty)
             ctx.lineTo(rCr.x, by)
 
-            ctx.stroke();
         } else if (this.shape == Shapes.Line) {
+            ctx.moveTo(pos.x, pos.y)
+            ctx.lineTo(dim.x, dim.y)
 
         } else if (this.shape == Shapes.Curve) {
+            let avg = {x: (pos.x+dim.x)/2, y: (pos.y+dim.y)/2 }
+            ctx.moveTo(pos.x, pos.y)
+            ctx.bezierCurveTo(pos.x, pos.y, avg.x, avg.y, dim.x, dim.y)
 
         }
 
-        if (this.activeStroke != Colors.Clear) { ctx.stroke(); }
-        if (this.activeFill != Colors.Clear) { ctx.fill(); }
+        //apply indidually for complex shading options?
+        finish(ctx, this.activeStroke, this.activeFill);
     }
 }
 
@@ -127,17 +156,17 @@ export class Draggable extends Renderable {
     constructor(
         shape: Shapes, fill: Colors, stroke: Colors,
         strokeWidth: number = 2,
-        pos: Dim = zeroDim, dim: Dim = defaultDim) {
+        pos: Dim = ZeroDim, dim: Dim = DefaultDim) {
             super(shape, fill, stroke, strokeWidth, pos, dim);
         }
 
-    dragTo(delta:Dim) {
+    dragTo(delta:Dim, ctx:CanvasRenderingContext2D) {
         this.pos.x += delta.x;
         this.pos.y += delta.y;
     }
 }
 
-export class Component extends Renderable{
+export class Component extends Draggable{
     
     name: string;
     inputs: Input[];
@@ -145,34 +174,96 @@ export class Component extends Renderable{
     fields: Field[];
     views: View[];
     allowViews: boolean;
+    titleDim: Dim;
+    boxdim: BoxCoord
 
-    private adjustNodePos(isLeft: boolean, nodes1:Node[], nodes2:Node[]) {
-        let x = isLeft? this.pos.x-this.dim.x/2 : this.pos.x+this.dim.x/2;
-        let numNodes = nodes1.length + nodes2.length;
-        let dy = this.dim.y / (numNodes+1)
-        let ty = this.pos.y-this.dim.y/2
+    private adjustNodePos(isLeft: boolean, nodes1:Node[], nodes2:Node[], ctx:CanvasRenderingContext2D) {
+        let box = this.boxdim;
+        let numOuts = this.outputs.length;
+        let numIns = this.inputs.length + this.views.length;
 
-        for (let i = 0; i < nodes1.length; ++i) {
-            nodes1[i].setPos({ x:x, y: ty+dy*(i+1)})
+        let dy = this.dim.y / (numOuts+1)
+        for (let i = 0; i < numOuts; ++i) {
+            let output = this.outputs[i]
+            let outPos = {x:box.left, y:(i+1)*dy+box.top}
+            output.setPos(outPos, ctx)
         }
 
-        for (let i = 0; i < nodes2.length; ++i) {
-            nodes1[i].setPos({ x:x, y: ty+dy*(i+nodes1.length+1)})
+        dy = this.dim.y / (numIns+1)
+        for (let i = 0; i < this.inputs.length; ++i) {
+            let input = this.inputs[i]
+            let inPos = {x:box.right, y:(i+1)*dy+box.top}
+            input.setPos(inPos, ctx)
         }
+
+        for (let i = 0; i < this.views.length; ++i) {
+            let view = this.views[i]
+            let viewPos = {x:box.right, y:(this.inputs.length+i+1)*dy+box.top}
+            view.setPos(viewPos, ctx)
+        }
+
     }
 
-    private adjustFieldPos() {
+    private adjustFieldPos(ctx:CanvasRenderingContext2D) {
+        let dy = (this.dim.y - this.titleDim.y) / (this.fields.length + 1);
         
+        for (let i = 0; i < this.fields.length; ++i) {
+            let field = this.fields[i];
+            let x = this.pos.x
+            let y = this.pos.y - this.titleDim.y/2 + field.dim.y * i;
+            field.setPos({x:x, y:y}, ctx)
+        }
     }
 
-    private adjustParts() {
-        this.adjustNodePos(false, this.inputs, this.views);
-        this.adjustNodePos(true, this.outputs, []);
-        this.adjustFieldPos()
+    private setTitle(ctx:CanvasRenderingContext2D) {
+        ctx.font = TitleFont;
+        let x = this.pos.x - this.titleDim.x/2;
+        let y = this.boxdim.top + this.titleDim.y/2;
+        ctx.lineWidth = .2;
+        ctx.fillStyle = Colors.White;
+        ctx.strokeStyle = Colors.Black;
+        ctx.fillText(this.name, x, y);
+        ctx.strokeText(this.name, x, y);
+    }
+
+    private measureText(text:string, font:string, ctx: CanvasRenderingContext2D) {
+        ctx.font = font;
+        let metrics = ctx.measureText(text);
+        return {x: metrics.width, y:metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent}
+    }
+
+    private calcReqDim(ctx:CanvasRenderingContext2D) : Dim{
+
+        let numNodes = Math.max(this.outputs.length, this.inputs.length + this.views.length);
+        let numViews = this.views.length;
+        let textDim = this.measureText(this.name, TitleFont, ctx)
+
+        let nodeHeight = Node.NodeHeight * numNodes;
+        let fieldHeight = ((Field.fieldHeight * numViews) + textDim.y);
+        let fieldWidth = Field.fieldMinWidth;//this.views.reduce((acc, val) => acc + val.dim.x , 0);
+
+        let height = Math.max(nodeHeight, fieldHeight, DefaultDim.y) * TB_Margin;
+        let width = Math.max(fieldWidth, textDim.x, DefaultDim.x) * LR_Margin;
+
+        console.log(`FW: ${fieldWidth} TW: ${textDim.x} AW: ${width}`)
+
+        this.titleDim = textDim;
+
+        return { x: width, y: height }
+;
+    }
+
+    private adjustParts(ctx:CanvasRenderingContext2D) {
+        this.dim = this.calcReqDim(ctx);
+        this.boxdim = new BoxCoord(this.pos, this.dim);
+        this.adjustNodePos(false, this.inputs, this.views, ctx);
+        this.adjustNodePos(true, this.outputs, [], ctx);
+        this.adjustFieldPos(ctx);
     }
 
     public override draw(ctx:CanvasRenderingContext2D) {
         super.draw(ctx);
+        this.setTitle(ctx);
         this.inputs.forEach(e => e.draw(ctx))
         this.views.forEach(e => e.draw(ctx))
         this.outputs.forEach(e => e.draw(ctx))
@@ -187,23 +278,26 @@ export class Component extends Renderable{
         expandable: boolean,
         shape: Shapes, fill: Colors, stroke: Colors,
         strokeWidth: number = 2,
-        pos: Dim = zeroDim, dim: Dim = defaultDim) {
+        pos: Dim = ZeroDim, dim: Dim = DefaultDim) {
         super(shape, fill, stroke, strokeWidth, pos, dim);
 
         this.name = name;
         this.inputs = inputs;
         this.outputs = outputs;
-        this.fields = fields = [];
+        this.fields = fields;
         this.views = [];
         this.allowViews = expandable;
-
-        this.adjustParts();
-
+        this.titleDim = { x:100, y:30 }
     }
 
-    public override setPos(pos: Dim) {
-        super.setPos(pos)
-        this.adjustParts()
+    public dragTo(delta: Dim, ctx:CanvasRenderingContext2D) {
+        super.dragTo(delta, ctx);
+        this.adjustParts(ctx);
+    }
+
+    public setPos(pos: Dim, ctx:CanvasRenderingContext2D) {
+        super.setPos(pos, ctx)
+        this.adjustParts(ctx)
     }
     
 }
@@ -217,12 +311,17 @@ export class Provider extends Component{
 
         super(name, [], outputs, fields, false,
             Shapes.Cylinder, Colors.Clear, Colors.White);
+            console.log(`PROVIDER: F ${this.fields.length}`)
     }
 }
 
 export class Node extends Renderable {
+
+    static readonly NodeHeight = 4;
+    static readonly NodeWidth = 4;
+
     constructor(fill:Colors, stroke:Colors) {
-        super(Shapes.Oval, fill, stroke, 3, undefined, {x:4, y:4})
+        super(Shapes.Oval, fill, stroke, 3, undefined, {x:Node.NodeWidth, y:Node.NodeHeight})
     }
 
     public override draw(ctx: CanvasRenderingContext2D) {
@@ -245,6 +344,22 @@ export class Input extends Node {
 export class View extends Input {
     constructor() {
         super(undefined, Colors.Yellow);
+    }
+}
+
+export class Field extends Renderable {
+
+    public static readonly fieldHeight: number = 18;
+    public static readonly fieldMinWidth: number = 120;
+    public valPair: ValPair;
+    public name: string;
+    constructor(type:Types) {
+        super(Shapes.Rect, Colors.White, Colors.Black, 2, undefined, {x:Field.fieldMinWidth, y:Field.fieldHeight});
+        this.valPair = defaultValue(type);
+    }
+
+    public override draw(ctx: CanvasRenderingContext2D) {
+        super.draw(ctx);
     }
 }
 
@@ -302,11 +417,4 @@ function getValuePairFrom(type: Types, value: any) : ValPair {
     return ret;
 }
 
-export class Field extends Renderable {
-    public valPair: ValPair;
-    public name: string;
-    constructor(type:Types) {
-        super(Shapes.Rect, Colors.White, Colors.Black, 2);
-        this.valPair = defaultValue(type);
-    }
-}
+

@@ -91,12 +91,14 @@ class Canvas {
         let center = this.canvasCenter();
         ctx.lineWidth = 2;
         ctx.strokeStyle = Colors.Green;
+        ctx.globalAlpha = .3;
         ctx.beginPath();
         ctx.moveTo(0, center.y);
         ctx.lineTo(cnv.width, center.y);
         ctx.moveTo(center.x, 0);
         ctx.lineTo(center.x, cnv.height);
         ctx.stroke();
+        ctx.globalAlpha = 1;
     }
     redraw() {
         this.clearCanvas();
@@ -166,11 +168,9 @@ class Canvas {
     }
     addComponent(component) {
         var center = this.canvasCenter();
-        component.setPos(this.canvasCenter());
-        console.log(`CMP: ${center.x} -> ${component.pos.x}`);
+        component.setPos(this.canvasCenter(), this.context);
         this.components.push(component);
         this.redraw();
-        console.log(`Added component: ${component.name} | ${this.components.length}`);
     }
 }
 export class CanvasController {
