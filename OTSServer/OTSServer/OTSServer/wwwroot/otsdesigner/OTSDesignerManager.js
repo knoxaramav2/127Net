@@ -5,7 +5,6 @@ export class DesignManager {
         this.cvController = new CanvasController();
     }
     insertComponent(compDef) {
-        console.log(compDef);
         var comp = toOtsJObj(compDef);
         this.cvController.addComponent(comp);
     }

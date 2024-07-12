@@ -11,7 +11,6 @@ export class DesignManager {
     }
 
     public insertComponent(compDef:string) {
-        console.log(compDef);
         var comp = toOtsJObj(compDef);
         this.cvController.addComponent(comp);
     }

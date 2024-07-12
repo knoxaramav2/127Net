@@ -5,6 +5,19 @@ export enum Shapes {
     Curve, Line,
 }
 
+export enum OTSClass {
+    Component = "Component",
+    Provider = "Provider",
+    Actuator = "Actuator",
+    Monitor = "Monitor",
+    Single = "Single",
+    Nomad = "Nomad",
+    Input = "Input", 
+    Output = "Output", 
+    View = "View",
+    Field = "Field"
+}
+
 export enum Colors {
     Red = '#c41808', 
     Cyan = '#0bc5d6', 
@@ -48,24 +61,28 @@ const LabelFont: string = '14px serif'
 export class OTSObject {
     pos: Dim;
     dim: Dim;
+    id: string;
+    otsClass: OTSClass
         
-    public inBound(coord: Dim): boolean {
-
+    public inBound(coord: Dim): OTSObject {
         return (
             (coord.x > (this.pos.x-this.dim.x/2)) &&
             (coord.x < (this.pos.x+this.dim.x/2)) &&
             (coord.y > (this.pos.y-this.dim.y/2)) &&
             (coord.y < (this.pos.y+this.dim.y/2))
-        );
+        ) ? this : null;
     }
 
     public setPos(pos: Dim, ctx:CanvasRenderingContext2D) {
         this.pos = pos;
+        console.log(`POS: ${pos.x}, ${pos.y}`)
     }
 
-    constructor(pos:Dim = ZeroDim, dim:Dim = DefaultDim) {
+    constructor(otsClass:OTSClass, pos:Dim = ZeroDim, dim:Dim = DefaultDim) {
         this.pos = pos;
         this.dim = dim;
+        this.id = crypto.randomUUID()
+        this.otsClass = otsClass;
     }
 }
 
@@ -78,11 +95,11 @@ export class Renderable extends OTSObject {
     activeStroke: Colors;
     activeFill: Colors;
 
-    constructor(
+    constructor(otsClass:OTSClass,
         shape:Shapes, fill:Colors, stroke:Colors,
         strokeWidth: number = 2,
         pos:Dim = ZeroDim, dim:Dim = DefaultDim) {
-        super(pos, dim);
+        super(otsClass, pos, dim);
 
         this.shape = shape;
         this.fill = fill;
@@ -149,20 +166,31 @@ export class Renderable extends OTSObject {
         //apply indidually for complex shading options?
         finish(ctx, this.activeStroke, this.activeFill);
     }
+
+    setSelected() {
+        console.log('Selected')
+    }
+
+    setUnselected() {
+        console.log('Unselected')
+    }
 }
 
 export class Draggable extends Renderable {
 
-    constructor(
+    constructor(otsClass:OTSClass,
         shape: Shapes, fill: Colors, stroke: Colors,
         strokeWidth: number = 2,
         pos: Dim = ZeroDim, dim: Dim = DefaultDim) {
-            super(shape, fill, stroke, strokeWidth, pos, dim);
+            super(otsClass, shape, fill, stroke, strokeWidth, pos, dim);
         }
 
-    dragTo(delta:Dim, ctx:CanvasRenderingContext2D) {
-        this.pos.x += delta.x;
-        this.pos.y += delta.y;
+    drag(delta:Dim, ctx:CanvasRenderingContext2D) {
+        let newPos = {
+            x: this.pos.x + delta.x,
+            y: this.pos.y + delta.y
+        }
+        this.setPos(newPos, ctx)
     }
 }
 
@@ -245,8 +273,6 @@ export class Component extends Draggable{
         let height = Math.max(nodeHeight, fieldHeight, DefaultDim.y) * TB_Margin;
         let width = Math.max(fieldWidth, textDim.x, DefaultDim.x) * LR_Margin;
 
-        console.log(`FW: ${fieldWidth} TW: ${textDim.x} AW: ${width}`)
-
         this.titleDim = textDim;
 
         return { x: width, y: height }
@@ -269,8 +295,16 @@ export class Component extends Draggable{
         this.outputs.forEach(e => e.draw(ctx))
         this.fields.forEach(e => e.draw(ctx))
     }
+
+    private setPartHosts() {
+        for (let i = 0; i < this.inputs.length; ++i) { this.inputs[i].host = this; }
+        for (let i = 0; i < this.outputs.length; ++i) { this.outputs[i].host = this; }
+        for (let i = 0; i < this.views.length; ++i) { this.views[i].host = this; }
+        for (let i = 0; i < this.fields.length; ++i) { this.fields[i].host = this; }
+    }
     
     constructor(
+        otsClass:OTSClass,
         name: string,
         inputs: Input[],
         outputs: Output[],
@@ -279,8 +313,8 @@ export class Component extends Draggable{
         shape: Shapes, fill: Colors, stroke: Colors,
         strokeWidth: number = 2,
         pos: Dim = ZeroDim, dim: Dim = DefaultDim) {
-        super(shape, fill, stroke, strokeWidth, pos, dim);
-
+        super(otsClass, shape, fill, stroke, strokeWidth, pos, dim);
+        
         this.name = name;
         this.inputs = inputs;
         this.outputs = outputs;
@@ -288,10 +322,11 @@ export class Component extends Draggable{
         this.views = [];
         this.allowViews = expandable;
         this.titleDim = { x:100, y:30 }
+        this.setPartHosts();
     }
 
-    public dragTo(delta: Dim, ctx:CanvasRenderingContext2D) {
-        super.dragTo(delta, ctx);
+    public drag(deltaPos: Dim, ctx:CanvasRenderingContext2D) {
+        super.drag(deltaPos, ctx);
         this.adjustParts(ctx);
     }
 
@@ -300,6 +335,15 @@ export class Component extends Draggable{
         this.adjustParts(ctx)
     }
     
+    public override inBound(coord: Dim): OTSObject {
+        if (super.inBound(coord) === null) { return null; }
+        for (let i = 0; i < this.inputs.length; ++i) { if(this.inputs[i].inBound(coord) !== null) return this.inputs[i]; }
+        for (let i = 0; i < this.outputs.length; ++i) { if(this.outputs[i].inBound(coord) !== null) return this.outputs[i]; }
+        for (let i = 0; i < this.views.length; ++i) { if(this.views[i].inBound(coord) !== null) return this.views[i]; }
+        for (let i = 0; i < this.fields.length; ++i) { if(this.fields[i].inBound(coord) !== null) return this.fields[i]; }
+        console.log('Return self')
+        return this;
+    }
 }
 
 export class Provider extends Component{
@@ -309,19 +353,28 @@ export class Provider extends Component{
         fields: Field[],
         ) {
 
-        super(name, [], outputs, fields, false,
+        super(OTSClass.Provider, name, [], outputs, fields, false,
             Shapes.Cylinder, Colors.Clear, Colors.White);
-            console.log(`PROVIDER: F ${this.fields.length}`)
     }
 }
 
-export class Node extends Renderable {
+export class ComponentPart extends Renderable {
+    host: Component;
+
+    constructor(otsClass: OTSClass,
+        shape:Shapes, fill: Colors, stroke: Colors, 
+        strokeWidth:number, pos:Dim, dim:Dim) {
+        super(otsClass, shape, fill, stroke, strokeWidth, pos, dim)
+        this.host = null;
+    }
+}
+
+export class Node extends ComponentPart {
 
     static readonly NodeHeight = 4;
     static readonly NodeWidth = 4;
-
-    constructor(fill:Colors, stroke:Colors) {
-        super(Shapes.Oval, fill, stroke, 3, undefined, {x:Node.NodeWidth, y:Node.NodeHeight})
+    constructor(otsClass: OTSClass, fill:Colors, stroke:Colors) {
+        super(otsClass, Shapes.Oval, fill, stroke, 3, undefined, {x:Node.NodeWidth, y:Node.NodeHeight})
     }
 
     public override draw(ctx: CanvasRenderingContext2D) {
@@ -331,13 +384,13 @@ export class Node extends Renderable {
 
 export class Output extends Node {
     constructor() {
-        super(Colors.Clear, Colors.Yellow);
+        super(OTSClass.Output, Colors.Clear, Colors.Yellow);
     }
 }
 
 export class Input extends Node {
     constructor(fill:Colors=Colors.Clear, stroke:Colors=Colors.Green) {
-        super(fill, stroke);
+        super(OTSClass.Input, fill, stroke);
     }
 }
 
@@ -347,18 +400,19 @@ export class View extends Input {
     }
 }
 
-export class Field extends Renderable {
+export class Field extends ComponentPart {
 
     public static readonly fieldHeight: number = 18;
     public static readonly fieldMinWidth: number = 120;
     public valPair: ValPair;
     public name: string;
     constructor(type:Types) {
-        super(Shapes.Rect, Colors.White, Colors.Black, 2, undefined, {x:Field.fieldMinWidth, y:Field.fieldHeight});
+        super(OTSClass.Field, Shapes.Rect, Colors.White, Colors.Black, 2, undefined, {x:Field.fieldMinWidth, y:Field.fieldHeight});
         this.valPair = defaultValue(type);
     }
 
     public override draw(ctx: CanvasRenderingContext2D) {
+        
         super.draw(ctx);
     }
 }
@@ -417,4 +471,6 @@ function getValuePairFrom(type: Types, value: any) : ValPair {
     return ret;
 }
 
-
+export function deltaPos(pos1: Dim, pos2: Dim): Dim {
+    return { x: pos2.x-pos1.x, y: pos2.y-pos1.y }
+}

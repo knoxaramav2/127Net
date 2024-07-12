@@ -1,10 +1,21 @@
-﻿import { Component, Field, OTSObject, Dim, Colors, Shapes } from "./appblueprints.js";
+﻿import { 
+    Component, Renderable,
+    Field, OTSObject,
+    Dim, Colors,
+    deltaPos
+} from "./appblueprints.js";
+
+enum DragMode {
+    None,
+    Left,
+    Middle
+} 
 
 class Canvas {
     canvas: HTMLCanvasElement;
     context: CanvasRenderingContext2D;
 
-    selected: Component;
+    selected: Renderable
     components: Array<Component>;
 
     //Callbacks
@@ -12,15 +23,14 @@ class Canvas {
     onEditFieldSelectCallback: (field:Field) => void;
 
     //state
-    mouseHold: boolean;
-    mousePos: {x:number, y:number};
-
+    mouseHold: DragMode;
+    mousePos: Dim;
     updateSpeed: number;
-
     cycleCenter: Dim;
     rotAngle:number;
     rotSpeed:number;
     rotFlip: boolean;
+    canvasCenter: Dim;
 
     private initCallbacks(): void {
         this.onSelectCallback = null;
@@ -49,15 +59,16 @@ class Canvas {
     private initMisc() {
         this.mousePos = null;
         this.selected = null;
-        this.mouseHold = false;
+        this.mouseHold = DragMode.None;
         this.components = [];
 
         this.updateSpeed = 0.01;
 
-        this.cycleCenter = { x: 0, y: 0 }
+        this.cycleCenter = this.getCanvasCenter();
         this.rotAngle = 0.0;
         this.rotSpeed = 2.5;
         this.rotFlip = false;
+        this.canvasCenter = { x:0, y:0 }
     }
 
     private update() {
@@ -108,7 +119,7 @@ class Canvas {
     private drawCycle() {
         
         let ctx = this.context;
-        let center = this.canvasCenter();
+        let center = this.getCanvasCenter();
         let angle = (this.rotAngle*Math.PI)/180;
 
         ctx.strokeStyle = Colors.Green;
@@ -128,7 +139,7 @@ class Canvas {
     private drawCrosshair() {
         let ctx = this.context;
         let cnv = this.canvas;
-        let center = this.canvasCenter();
+        let center = this.cycleCenter
 
         ctx.lineWidth = 2;
         ctx.strokeStyle = Colors.Green;
@@ -156,16 +167,22 @@ class Canvas {
 
     }
 
-    private objectAt(pos: { x: number, y: number } ): OTSObject {
+    private objectAt(pos: { x: number, y: number } ): Renderable {
 
+        for (let i = this.components.length - 1; i >= 0; --i) {
+            let cmp = this.components[i];
+            if (cmp.inBound(pos)) {
+                return cmp;
+            }
+        }
 
         return null;
     }
 
-    private moveToFront(obj:Component) {
+    private moveToFront(obj:Renderable) {
         if (obj == null) { return null; }
-
-        var idx = this.components.indexOf(obj);
+        let cmp = obj as Component;
+        var idx = this.components.indexOf(cmp);
         var rem = this.components.splice(idx, 1);
         this.components.push(rem[0]);
     }
@@ -173,6 +190,7 @@ class Canvas {
     private drawMouseCircle() {
         if (!this.mouseHold) { return false; }
         let pos = this.mousePos;
+        if (pos == null) { return; }
         this.context.beginPath();
         this.context.lineWidth = 2;
         this.context.strokeStyle = 'red';
@@ -180,31 +198,80 @@ class Canvas {
         this.context.stroke();
     }
 
+    private translateCanvas(delta:Dim) {
+        this.canvasCenter = {
+            x:this.canvasCenter.x+delta.x , 
+            y:this.canvasCenter.y+delta.y
+        }
+
+        this.cycleCenter = {
+            x:this.cycleCenter.x+delta.x , 
+            y:this.cycleCenter.y+delta.y
+        }
+
+        for (let i = 0; i < this.components.length; ++i) { 
+            this.components[i].drag(delta, this.context); 
+        }
+
+        console.log(`Center: ${this.canvasCenter.x}, ${this.canvasCenter.y}`)
+    }
+
     private onMousePress(e: MouseEvent) {
 
         if (e.button == 0) {//left
-            this.mouseHold = true;
+            this.mouseHold = DragMode.Left;
             var obj = this.objectAt(this.mousePos);
+            if (obj !== null) {
+                if (this.selected !== null && this.selected !== obj) {
+                    this.selected.setUnselected();
+                    console.log(`UNSELECT: ${this.selected.otsClass}`)
+                }
+
+                this.selected = obj;
+                this.selected.setSelected();
+                this.moveToFront(this.selected);
+
+                console.log(`SELECT: ${obj.otsClass}`)
+                
+            } else if (this.selected !== null) {
+                this.selected.setUnselected();
+                this.selected = null;
+            }
         } else if (e.button == 1) {//center
-
+            this.mouseHold = DragMode.Middle;
         } else if (e.button == 2) {//right
-
+            
         }
 
         this.redraw();
     }
 
     private onMouseRelease(e: MouseEvent) {
-        this.mouseHold = false;
+        this.mouseHold = DragMode.None;
         this.redraw();
     }
 
     private onMouseMove(e: MouseEvent) {
+        let oldMouse = this.mousePos ?? this.normalMousePos(e);
         this.mousePos = this.normalMousePos(e);
-
-        if (this.mouseHold) {
-
+        let selected = this.selected;
+        let delta = deltaPos(oldMouse, this.mousePos);
+        if (this.mouseHold === DragMode.Left) {
+            if (selected !== null) {
+                //drag
+                if (selected instanceof Component) {
+                    (selected as Component).drag(delta, this.context)
+                }
+                //DrawLink
+                else if (selected instanceof Node) {
+                    console.log('Selected node')
+                    //TODO
+                }
+            }
+        } else if (this.mouseHold === DragMode.Middle) {
+            this.translateCanvas(delta);
         }
+
         if (this.selected != null) {
 
         }
@@ -216,7 +283,7 @@ class Canvas {
         this.mousePos = null;
     }
     
-    private canvasCenter(): Dim {
+    private getCanvasCenter(): Dim {
         let w = this.canvas.width/2;
         let h = this.canvas.height/2;
         return {x : w, y: h };
@@ -228,8 +295,8 @@ class Canvas {
     }
 
     public addComponent(component: Component) {
-        var center = this.canvasCenter();
-        component.setPos(this.canvasCenter(), this.context);
+        var center = this.getCanvasCenter();
+        component.setPos(this.getCanvasCenter(), this.context);
         this.components.push(component);
         this.redraw();
     }

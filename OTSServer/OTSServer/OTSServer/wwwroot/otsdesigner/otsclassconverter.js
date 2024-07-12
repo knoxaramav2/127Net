@@ -6,7 +6,9 @@ export function toOtsJObj(raw) {
     var outputs = [
         new Output(), new Output(), new Output(), new Output(),
     ];
-    var fields = [new Field(Types.String), new Field(Types.String), new Field(Types.String)];
+    var fields = [
+        new Field(Types.String), new Field(Types.String), new Field(Types.String)
+    ];
     var component = new Provider(raw.name, outputs, fields);
     return component;
 }
