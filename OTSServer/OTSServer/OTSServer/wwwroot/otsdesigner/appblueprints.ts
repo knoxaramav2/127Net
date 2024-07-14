@@ -55,14 +55,16 @@ const DefaultDim: Dim = { x: 50, y:50 }
 const ZeroDim: Dim = { x: 0, y: 0 }
 const LR_Margin: number = 1.15
 const TB_Margin: number = 1.40
-const TitleFont: string = '22px serif'
-const LabelFont: string = '14px serif'
+const DefaultTitleFont: string = '22px serif'
+const DefaultLabelFont: string = '14px serif'
 
 export class OTSObject {
     pos: Dim;
     dim: Dim;
     id: string;
-    otsClass: OTSClass
+    otsClass: OTSClass;
+    scale: number;
+    origDim: Dim;
         
     public inBound(coord: Dim): OTSObject {
         return (
@@ -75,14 +77,23 @@ export class OTSObject {
 
     public setPos(pos: Dim, ctx:CanvasRenderingContext2D) {
         this.pos = pos;
-        console.log(`POS: ${pos.x}, ${pos.y}`)
+    }
+
+    public setScale(scale:number, ctx:CanvasRenderingContext2D) {
+        this.scale = scale;
+        this.dim = {
+            x: this.origDim.x*this.scale,
+            y: this.origDim.y*this.scale
+        }
     }
 
     constructor(otsClass:OTSClass, pos:Dim = ZeroDim, dim:Dim = DefaultDim) {
         this.pos = pos;
         this.dim = dim;
+        this.origDim = dim;
         this.id = crypto.randomUUID()
         this.otsClass = otsClass;
+        this.scale = 1.0;
     }
 }
 
@@ -94,6 +105,18 @@ export class Renderable extends OTSObject {
 
     activeStroke: Colors;
     activeFill: Colors;
+
+    titleFont(): string {
+
+        let fontSz = 22;
+        return `${fontSz*this.scale}px Serif`;
+    }
+
+    labelFont(): string {
+
+        let fontSz = 12;
+        return `${fontSz*this.scale}px Serif`;
+    }
 
     constructor(otsClass:OTSClass,
         shape:Shapes, fill:Colors, stroke:Colors,
@@ -134,6 +157,7 @@ export class Renderable extends OTSObject {
             ctx.roundRect(pos.x, pos.y, dim.x, dim.y, 10)
 
         } else if (this.shape == Shapes.Cylinder) {
+
             let ty = pos.y-dim.y/2;
             let by = pos.y+dim.y/2;
             ctx.beginPath()
@@ -160,7 +184,6 @@ export class Renderable extends OTSObject {
             let avg = {x: (pos.x+dim.x)/2, y: (pos.y+dim.y)/2 }
             ctx.moveTo(pos.x, pos.y)
             ctx.bezierCurveTo(pos.x, pos.y, avg.x, avg.y, dim.x, dim.y)
-
         }
 
         //apply indidually for complex shading options?
@@ -244,9 +267,16 @@ export class Component extends Draggable{
     }
 
     private setTitle(ctx:CanvasRenderingContext2D) {
-        ctx.font = TitleFont;
+        let font = this.titleFont();
+        ctx.font = font
         let x = this.pos.x - this.titleDim.x/2;
         let y = this.boxdim.top + this.titleDim.y/2;
+        let dim = this.measureText(this.name, font, ctx);
+        ctx.beginPath();
+        ctx.rect(x, y-dim.y, dim.x, dim.y)
+        ctx.fillStyle = Colors.Black;
+        ctx.fill();
+        //ctx.stroke();
         ctx.lineWidth = .2;
         ctx.fillStyle = Colors.White;
         ctx.strokeStyle = Colors.Black;
@@ -264,19 +294,17 @@ export class Component extends Draggable{
 
         let numNodes = Math.max(this.outputs.length, this.inputs.length + this.views.length);
         let numViews = this.views.length;
-        let textDim = this.measureText(this.name, TitleFont, ctx)
+        let textDim = this.measureText(this.name, this.titleFont(), ctx)
 
         let nodeHeight = Node.NodeHeight * numNodes;
         let fieldHeight = ((Field.fieldHeight * numViews) + textDim.y);
         let fieldWidth = Field.fieldMinWidth;//this.views.reduce((acc, val) => acc + val.dim.x , 0);
-
-        let height = Math.max(nodeHeight, fieldHeight, DefaultDim.y) * TB_Margin;
-        let width = Math.max(fieldWidth, textDim.x, DefaultDim.x) * LR_Margin;
+        let height = Math.max(nodeHeight, fieldHeight, DefaultDim.y) * TB_Margin * this.scale;
+        let width = Math.max(fieldWidth, textDim.x, DefaultDim.x) * LR_Margin * this.scale;
 
         this.titleDim = textDim;
 
         return { x: width, y: height }
-;
     }
 
     private adjustParts(ctx:CanvasRenderingContext2D) {
@@ -330,7 +358,7 @@ export class Component extends Draggable{
         this.adjustParts(ctx);
     }
 
-    public setPos(pos: Dim, ctx:CanvasRenderingContext2D) {
+    public override setPos(pos: Dim, ctx:CanvasRenderingContext2D) {
         super.setPos(pos, ctx)
         this.adjustParts(ctx)
     }
@@ -343,6 +371,17 @@ export class Component extends Draggable{
         for (let i = 0; i < this.fields.length; ++i) { if(this.fields[i].inBound(coord) !== null) return this.fields[i]; }
         console.log('Return self')
         return this;
+    }
+
+    public override setScale(scale:number, ctx:CanvasRenderingContext2D) {
+        super.setScale(scale, ctx);
+
+        for (let i = 0; i < this.inputs.length; ++i) { this.inputs[i].setScale(scale, ctx); }
+        for (let i = 0; i < this.outputs.length; ++i) { this.outputs[i].setScale(scale, ctx); }
+        for (let i = 0; i < this.views.length; ++i) { this.views[i].setScale(scale, ctx); }
+        for (let i = 0; i < this.fields.length; ++i) { this.fields[i].setScale(scale, ctx); }
+
+        this.adjustParts(ctx);
     }
 }
 
@@ -366,6 +405,10 @@ export class ComponentPart extends Renderable {
         strokeWidth:number, pos:Dim, dim:Dim) {
         super(otsClass, shape, fill, stroke, strokeWidth, pos, dim)
         this.host = null;
+    }
+
+    public override setScale(scale: number, ctx: CanvasRenderingContext2D) {
+        super.setScale(scale, ctx);
     }
 }
 
@@ -471,6 +514,20 @@ function getValuePairFrom(type: Types, value: any) : ValPair {
     return ret;
 }
 
+//TODO Util lib
 export function deltaPos(pos1: Dim, pos2: Dim): Dim {
     return { x: pos2.x-pos1.x, y: pos2.y-pos1.y }
+}
+
+export function scaleLine(p1:Dim, p2:Dim, scale:number) : Dim {
+    
+    let hyp = Math.sqrt(Math.pow(p2.x-p1.x ,2) + Math.pow(p2.y-p1.y,2)) * scale;
+    let angle = Math.atan2(p2.y-p1.y, p2.x-p1.x)
+
+    let npos = {
+        x:Math.cos(angle)*hyp+p1.x,
+        y:Math.sin(angle)*hyp+p1.y
+    }
+
+    return npos;
 }

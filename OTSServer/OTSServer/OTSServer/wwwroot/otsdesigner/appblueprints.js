@@ -55,8 +55,8 @@ const DefaultDim = { x: 50, y: 50 };
 const ZeroDim = { x: 0, y: 0 };
 const LR_Margin = 1.15;
 const TB_Margin = 1.40;
-const TitleFont = '22px serif';
-const LabelFont = '14px serif';
+const DefaultTitleFont = '22px serif';
+const DefaultLabelFont = '14px serif';
 export class OTSObject {
     inBound(coord) {
         return ((coord.x > (this.pos.x - this.dim.x / 2)) &&
@@ -66,16 +66,32 @@ export class OTSObject {
     }
     setPos(pos, ctx) {
         this.pos = pos;
-        console.log(`POS: ${pos.x}, ${pos.y}`);
+    }
+    setScale(scale, ctx) {
+        this.scale = scale;
+        this.dim = {
+            x: this.origDim.x * this.scale,
+            y: this.origDim.y * this.scale
+        };
     }
     constructor(otsClass, pos = ZeroDim, dim = DefaultDim) {
         this.pos = pos;
         this.dim = dim;
+        this.origDim = dim;
         this.id = crypto.randomUUID();
         this.otsClass = otsClass;
+        this.scale = 1.0;
     }
 }
 export class Renderable extends OTSObject {
+    titleFont() {
+        let fontSz = 22;
+        return `${fontSz * this.scale}px Serif`;
+    }
+    labelFont() {
+        let fontSz = 12;
+        return `${fontSz * this.scale}px Serif`;
+    }
     constructor(otsClass, shape, fill, stroke, strokeWidth = 2, pos = ZeroDim, dim = DefaultDim) {
         super(otsClass, pos, dim);
         this.shape = shape;
@@ -192,9 +208,16 @@ export class Component extends Draggable {
         }
     }
     setTitle(ctx) {
-        ctx.font = TitleFont;
+        let font = this.titleFont();
+        ctx.font = font;
         let x = this.pos.x - this.titleDim.x / 2;
         let y = this.boxdim.top + this.titleDim.y / 2;
+        let dim = this.measureText(this.name, font, ctx);
+        ctx.beginPath();
+        ctx.rect(x, y - dim.y, dim.x, dim.y);
+        ctx.fillStyle = Colors.Black;
+        ctx.fill();
+        //ctx.stroke();
         ctx.lineWidth = .2;
         ctx.fillStyle = Colors.White;
         ctx.strokeStyle = Colors.Black;
@@ -209,12 +232,12 @@ export class Component extends Draggable {
     calcReqDim(ctx) {
         let numNodes = Math.max(this.outputs.length, this.inputs.length + this.views.length);
         let numViews = this.views.length;
-        let textDim = this.measureText(this.name, TitleFont, ctx);
+        let textDim = this.measureText(this.name, this.titleFont(), ctx);
         let nodeHeight = Node.NodeHeight * numNodes;
         let fieldHeight = ((Field.fieldHeight * numViews) + textDim.y);
         let fieldWidth = Field.fieldMinWidth; //this.views.reduce((acc, val) => acc + val.dim.x , 0);
-        let height = Math.max(nodeHeight, fieldHeight, DefaultDim.y) * TB_Margin;
-        let width = Math.max(fieldWidth, textDim.x, DefaultDim.x) * LR_Margin;
+        let height = Math.max(nodeHeight, fieldHeight, DefaultDim.y) * TB_Margin * this.scale;
+        let width = Math.max(fieldWidth, textDim.x, DefaultDim.x) * LR_Margin * this.scale;
         this.titleDim = textDim;
         return { x: width, y: height };
     }
@@ -289,6 +312,22 @@ export class Component extends Draggable {
         console.log('Return self');
         return this;
     }
+    setScale(scale, ctx) {
+        super.setScale(scale, ctx);
+        for (let i = 0; i < this.inputs.length; ++i) {
+            this.inputs[i].setScale(scale, ctx);
+        }
+        for (let i = 0; i < this.outputs.length; ++i) {
+            this.outputs[i].setScale(scale, ctx);
+        }
+        for (let i = 0; i < this.views.length; ++i) {
+            this.views[i].setScale(scale, ctx);
+        }
+        for (let i = 0; i < this.fields.length; ++i) {
+            this.fields[i].setScale(scale, ctx);
+        }
+        this.adjustParts(ctx);
+    }
 }
 export class Provider extends Component {
     constructor(name, outputs, fields) {
@@ -299,6 +338,9 @@ export class ComponentPart extends Renderable {
     constructor(otsClass, shape, fill, stroke, strokeWidth, pos, dim) {
         super(otsClass, shape, fill, stroke, strokeWidth, pos, dim);
         this.host = null;
+    }
+    setScale(scale, ctx) {
+        super.setScale(scale, ctx);
     }
 }
 export class Node extends ComponentPart {
@@ -392,7 +434,17 @@ function getValuePairFrom(type, value) {
     }
     return ret;
 }
+//TODO Util lib
 export function deltaPos(pos1, pos2) {
     return { x: pos2.x - pos1.x, y: pos2.y - pos1.y };
+}
+export function scaleLine(p1, p2, scale) {
+    let hyp = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)) * scale;
+    let angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+    let npos = {
+        x: Math.cos(angle) * hyp + p1.x,
+        y: Math.sin(angle) * hyp + p1.y
+    };
+    return npos;
 }
 //# sourceMappingURL=appblueprints.js.map

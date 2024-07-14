@@ -1,4 +1,4 @@
-import { Component, Colors, deltaPos } from "./appblueprints.js";
+import { Component, Colors, deltaPos, scaleLine } from "./appblueprints.js";
 var DragMode;
 (function (DragMode) {
     DragMode[DragMode["None"] = 0] = "None";
@@ -6,9 +6,6 @@ var DragMode;
     DragMode[DragMode["Middle"] = 2] = "Middle";
 })(DragMode || (DragMode = {}));
 class Canvas {
-    initCallbacks() {
-        this.onSelectCallback = null;
-    }
     initCanvas() {
         this.canvas = document.getElementById('design-canvas');
         this.context = this.canvas.getContext('2d');
@@ -19,11 +16,13 @@ class Canvas {
         this.onMouseRelease = this.onMouseRelease.bind(this);
         this.onMouseMove = this.onMouseMove.bind(this);
         this.onMouseLost = this.onMouseLost.bind(this);
+        this.onMouseWheel = this.onMouseWheel.bind(this);
         this.onScaleChange = this.onScaleChange.bind(this);
         this.canvas.addEventListener("mousedown", this.onMousePress);
         this.canvas.addEventListener("mouseup", this.onMouseRelease);
         this.canvas.addEventListener("mousemove", this.onMouseMove);
         this.canvas.addEventListener("mouseout", this.onMouseLost);
+        this.canvas.addEventListener("wheel", this.onMouseWheel);
         window.addEventListener('resize', this.onScaleChange);
     }
     initMisc() {
@@ -32,11 +31,12 @@ class Canvas {
         this.mouseHold = DragMode.None;
         this.components = [];
         this.updateSpeed = 0.01;
-        this.cycleCenter = this.getCanvasCenter();
+        //this.cycleCenter = this.getCanvasCenter();
         this.rotAngle = 0.0;
         this.rotSpeed = 2.5;
         this.rotFlip = false;
-        this.canvasCenter = { x: 0, y: 0 };
+        this.canvasCenter = this.getCanvasCenter();
+        this.canvasScale = 1.0;
     }
     update() {
         this.rotAngle += this.rotSpeed;
@@ -52,7 +52,6 @@ class Canvas {
         this.initEventListeners();
         console.log(this.canvas == null ? 'Failed' : 'Success');
         this.initMisc();
-        this.initCallbacks();
         setInterval(() => { this.update(); }, this.updateSpeed * 1000);
     }
     normalMousePos(e) {
@@ -75,27 +74,10 @@ class Canvas {
     clearCanvas() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
-    drawCycle() {
-        let ctx = this.context;
-        let center = this.getCanvasCenter();
-        let angle = (this.rotAngle * Math.PI) / 180;
-        ctx.strokeStyle = Colors.Green;
-        this.context.beginPath();
-        ctx.lineWidth = 10;
-        this.rotAngle = Math.max(0, this.rotAngle);
-        this.rotAngle = Math.min(360, this.rotAngle);
-        if (this.rotFlip) {
-            ctx.arc(center.x, center.y, 100, angle, 0, false);
-        }
-        else {
-            ctx.arc(center.x, center.y, 100, 2 * Math.PI, angle, false);
-        }
-        ctx.stroke();
-    }
     drawCrosshair() {
         let ctx = this.context;
         let cnv = this.canvas;
-        let center = this.cycleCenter;
+        let center = this.canvasCenter;
         ctx.lineWidth = 2;
         ctx.strokeStyle = Colors.Green;
         ctx.globalAlpha = .3;
@@ -104,6 +86,20 @@ class Canvas {
         ctx.lineTo(cnv.width, center.y);
         ctx.moveTo(center.x, 0);
         ctx.lineTo(center.x, cnv.height);
+        ctx.stroke();
+        let offs = this.canvasScale;
+        let offDim = { x: 100, y: 100 };
+        let ncenter = scaleLine(center, offDim, this.canvasScale);
+        ctx.beginPath();
+        ctx.strokeStyle = Colors.Yellow;
+        ctx.moveTo(ncenter.x, ncenter.y);
+        ctx.lineTo(ncenter.x + offs, ncenter.y + offs);
+        ctx.stroke();
+        ncenter = center; //this.getCanvasCenter();
+        ctx.beginPath();
+        ctx.strokeStyle = Colors.Purple;
+        ctx.moveTo(ncenter.x, ncenter.y);
+        ctx.lineTo(ncenter.x + offs, ncenter.y + offs);
         ctx.stroke();
         ctx.globalAlpha = 1;
     }
@@ -154,14 +150,9 @@ class Canvas {
             x: this.canvasCenter.x + delta.x,
             y: this.canvasCenter.y + delta.y
         };
-        this.cycleCenter = {
-            x: this.cycleCenter.x + delta.x,
-            y: this.cycleCenter.y + delta.y
-        };
         for (let i = 0; i < this.components.length; ++i) {
             this.components[i].drag(delta, this.context);
         }
-        console.log(`Center: ${this.canvasCenter.x}, ${this.canvasCenter.y}`);
     }
     onMousePress(e) {
         if (e.button == 0) { //left
@@ -221,13 +212,24 @@ class Canvas {
     onMouseLost(e) {
         this.mousePos = null;
     }
+    onMouseWheel(e) {
+        let ds = e.deltaY > 0 ? -Canvas.scrollScalar : Canvas.scrollScalar;
+        this.canvasScale += ds;
+        let mpos = { x: e.x, y: e.y };
+        let screenCenter = this.getCanvasCenter();
+        let canvasCenter = this.canvasCenter;
+        for (let i = 0; i < this.components.length; ++i) {
+            let cmp = this.components[i];
+            let npos = scaleLine(canvasCenter, cmp.pos, this.canvasScale);
+            cmp.setScale(this.canvasScale, this.context);
+            cmp.setPos(npos, this.context);
+        }
+        this.redraw();
+    }
     getCanvasCenter() {
         let w = this.canvas.width / 2;
         let h = this.canvas.height / 2;
         return { x: w, y: h };
-    }
-    setOnObjectSelect(callback) {
-        this.onSelectCallback = callback;
     }
     addComponent(component) {
         var center = this.getCanvasCenter();
@@ -236,6 +238,7 @@ class Canvas {
         this.redraw();
     }
 }
+Canvas.scrollScalar = 0.01;
 export class CanvasController {
     showAlert() { alert("Test alert"); }
     constructor() {
@@ -244,6 +247,7 @@ export class CanvasController {
         this.canvas = new Canvas();
     }
     addComponent(component) {
+        component.setScale(this.canvas.canvasScale, this.canvas.context);
         this.canvas.addComponent(component);
     }
 }
